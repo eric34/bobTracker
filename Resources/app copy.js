@@ -1,10 +1,5 @@
-
-
-
-// THis is the fancy part I need to implement
-var geo= require('geo');
-// geo.oneShot();
-
+// this sets the background color of the master UIView (when there are no windows/tab groups on it)
+Titanium.UI.setBackgroundColor('#000');
 
 // This is for iOS to know why we are asking for location data
 Ti.Geolocation.purpose = "GPS Location Finding";
