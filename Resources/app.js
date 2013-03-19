@@ -2,7 +2,7 @@
 
 
 // THis is the fancy part I need to implement
-var geo= require('geo');
+//var geo= require('geo');
 // geo.oneShot();
 
 
@@ -12,14 +12,16 @@ Ti.Geolocation.purpose = "GPS Location Finding";
 // Assume iPhone not 5, and set some stuff
 var backgroundImage='/images/newCompass@2x.png';
 var degreeLabelTop=10;
-var waypointBox=30;
+var waypointBox=75;
+var waypointboxmargin=5;
 
 // check for iPhone 5, and set stuff if so
 if (Titanium.Platform.displayCaps.platformHeight===568) {
 	isIphone5=true;
 	backgroundImage='/images/newCompass-568h@2x.png';
 	degreeLabelTop=40;
-	waypointBox=50;
+	waypointBox=120;
+	waypointboxmargin=10;
 }
 
 // This sets the compass update to happen every 1 degree of rotation
@@ -62,6 +64,23 @@ var wayneedleImage =Ti.UI.createImageView({
 	image:'/images/newwayneedle.png'
 	});
 	
+//add waypoint info view
+var waypointInfo = Ti.UI.createView({
+	height:waypointBox,
+	width:(Titanium.Platform.displayCaps.platformWidth-(2*waypointboxmargin)), 
+	// too small on retina, just right on iphone 5, so use the margin to give a few extra pixels
+	backgroundColor:'#262e2f',
+	bottom: waypointboxmargin, 
+	// same here - get a few extra pixels on non 5
+	borderRadius: 10,
+	borderColor:'black',
+	borderWidth:3
+	
+});
+
+var wayPointTestLabel= Ti.UI.createLabel({text:"No active waypoint", color:"black"});
+
+waypointInfo.add(wayPointTestLabel);
 
 // Create a 2D matrix for the main needle
 var t = Ti.UI.create2DMatrix();
@@ -171,6 +190,7 @@ var tab1 = Titanium.UI.createTab({
 
 win1.add(headLabel);
 win1.add(wayneedleImage);
+win1.add(waypointInfo);
 //win1.add(needleLabel);
 win1.add(needleImage);
 
@@ -198,19 +218,20 @@ var tab3 = Titanium.UI.createTab({
 
 	// create table view data object
 	var data = [
-		{title:'Pegati Lake Outlet', wayLatitude:59.8793306, wayLongitude:160.1266278, hasChild:true},
-		{title:'Paiyun Creek', wayLatitude:59.8914972, wayLongitude:160.3706333, hasChild:true},
-		{title:'Kanuktik Creek', wayLatitude:59.8737222, wayLongitude:160.4757, hasChild:true},
-		{title:'Nakgil Creek', wayLatitude:59.854, wayLongitude:160.6997417, hasChild:true},
-		{title:'Sam Creek', wayLatitude:59.79305, wayLongitude:160.7500778, hasChild:true},
-		{title:'Klak Creek', wayLatitude:59.7805111, wayLongitude:160.7705944, hasChild:true},
-		{title:'Nukluk Creek', wayLatitude:59.7248556, wayLongitude:160.9935833, hasChild:true},
-		{title:'Kanektok Weir', wayLatitude:59.7672306, wayLongitude:161.0606194, hasChild:true},
-		{title:'Duncan Bros. Upper Camp', wayLatitude:59.8197056, wayLongitude:161.3057944, hasChild:true},
-		{title:'Duncan Bros. Lower Camp', wayLatitude:59.8076583, wayLongitude:161.5480722, hasChild:true},
-		{title:'Togiak Refuge Border', wayLatitude:59.8043667, wayLongitude:161.5887778, hasChild:true},
-		{title:'Alaska West Camp', wayLatitude:59.7794167, wayLongitude:161.7716167, hasChild:true},
-		{title:'Pull Out', wayLatitude:59.7565583, wayLongitude:161.8846028, hasChild:true}
+		{title:'Pegati Lake Outlet', wayLatitude:59.8793306, wayLongitude:-160.1266278, hasChild:true},
+		{title:'Paiyun Creek', wayLatitude:59.8914972, wayLongitude:-160.3706333, hasChild:true},
+		{title:'Kanuktik Creek', wayLatitude:59.8737222, wayLongitude:-160.4757, hasChild:true},
+		{title:'Nakgil Creek', wayLatitude:59.854, wayLongitude:-160.6997417, hasChild:true},
+		{title:'Sam Creek', wayLatitude:59.79305, wayLongitude:-160.7500778, hasChild:true},
+		{title:'Klak Creek', wayLatitude:59.7805111, wayLongitude:-160.7705944, hasChild:true},
+		{title:'Nukluk Creek', wayLatitude:59.7248556, wayLongitude:-160.9935833, hasChild:true},
+		{title:'Kanektok Weir', wayLatitude:59.7672306, wayLongitude:-161.0606194, hasChild:true},
+		{title:'Duncan Bros. Upper Camp', wayLatitude:59.8197056, wayLongitude:-161.3057944, hasChild:true},
+		{title:'Duncan Bros. Lower Camp', wayLatitude:59.8076583, wayLongitude:-161.5480722, hasChild:true},
+		{title:'Togiak Refuge Border', wayLatitude:59.8043667, wayLongitude:-161.5887778, hasChild:true},
+		{title:'Alaska West Camp', wayLatitude:59.7794167, wayLongitude:-161.7716167, hasChild:true},
+		{title:'Pull Out', wayLatitude:59.7565583, wayLongitude:-161.8846028, hasChild:true},
+		{title:'On the corner', wayLatitude:37.337681, wayLongitude:-122.038193, hasChild:true},
 	];
 	
 	var hdview=Ti.UI.createView({height:Ti.UI.SIZE,width:Ti.UI.SIZE});
@@ -261,7 +282,11 @@ var endLatitude=37.337681;
 var endLongitude=-122.038193;
 
 
-
+// make some labels
+var distanceLabel=Ti.UI.createLabel({text:"You are this many miles from MV:", color:'white', top:30});
+var distvalueLabel=Ti.UI.createLabel({color:'white', top:10});
+var bearingLabel=Ti.UI.createLabel({text:"Waypoint bearing is degrees", color:'white', top:50});
+var bearvalueLabel=Ti.UI.createLabel({color:'white', top:10});
 
 //var currentLocation=Ti.UI.createLabel({text:"Current", top:30});
 
@@ -296,9 +321,11 @@ Titanium.Geolocation.getCurrentPosition(function(e)
 				//////////////////////////////////////////
 				var lat1=latitude;
 				var lon1=-longitude;
+				//var lat1=37.288300;
+				//var lon1=-122.89200;
 				
-				var lat2=37.288217;
-				var lon2=-121.89191;
+				var lat2=37.337681;
+				var lon2=-122.038193;
 				
 				Number.prototype.toRad = function() {
 				   return this * Math.PI / 180;
@@ -319,6 +346,7 @@ Titanium.Geolocation.getCurrentPosition(function(e)
 				        Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
 				var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
 				var d = R * c;
+				alert(d);
 				var miles = (d/1.6);
 				
 				// calculate the bearing
@@ -327,21 +355,25 @@ Titanium.Geolocation.getCurrentPosition(function(e)
 				        Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
 				var brng = Math.atan2(y, x).toDeg();
 				var bearing=(brng+360) % 360; 
-
+				
+				distvalueLabel.text=(miles);
+				bearvalueLabel.text=(bearing);
 			});
 
 
 ///////////////  end the math //////////////////
 /////////////////////////////////
 
-var distanceLabel=Ti.UI.createLabel({text:"You are Kilometers from MV", top:50});
+
 //var distanceLabel=Ti.UI.createLabel({text:"You are "+miles+" miles from MV", top:50});
-//var bearingLabel=Ti.UI.createLabel({text:"Head for "+brng+" degrees", top:50});
+//var bearingLabel=Ti.UI.createLabel({text:"Waypoint bearing is "+brng+" degrees", top:50});
 
 // add some labels
 //win4.add(currentLocation);
-//win4.add(distanceLabel);
-//win4.add(bearingLabel);
+win4.add(distanceLabel);
+win4.add(distvalueLabel);
+win4.add(bearingLabel);
+win4.add(bearvalueLabel);
 
 
 

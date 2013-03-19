@@ -70,7 +70,7 @@ ui.makeCompassWindow = function() {
 		waypointBox=50;
 		}
 	
-	var self = 	
+	
 }
 
 ui.makeLocationWindow = function () {
