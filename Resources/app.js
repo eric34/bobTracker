@@ -9,21 +9,6 @@
 // This is for iOS to know why we are asking for location data
 Ti.Geolocation.purpose = "GPS Location Finding";
 
-// Assume iPhone not 5, and set some stuff
-var backgroundImage='/images/newCompass@2x.png';
-var degreeLabelTop=10;
-var waypointBox=75;
-var waypointboxmargin=5;
-
-// check for iPhone 5, and set stuff if so
-if (Titanium.Platform.displayCaps.platformHeight===568) {
-	isIphone5=true;
-	backgroundImage='/images/newCompass-568h@2x.png';
-	degreeLabelTop=40;
-	waypointBox=120;
-	waypointboxmargin=10;
-}
-
 // This sets the compass update to happen every 1 degree of rotation
 Titanium.Geolocation.headingFilter = 1;
 
@@ -32,9 +17,6 @@ var pd = require('PositionData');
 
 // What this does I am unsure
 var addPoint= require('PositionData').add;
-
-// make a couple labels to show some data
-var headLabel = Ti.UI.createLabel({text:" 0°", top:degreeLabelTop, width: 150, color:'white', font : { fontSize: 48 },textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER });
 
 // for testing
 //var needleLabel=Ti.UI.createLabel({text:"needle", top:60, color: 'white' });
@@ -53,35 +35,6 @@ var wayneedleNow=0;
 var wayneedleGoto=0;
 var wayneedleSlew=0;
 
-
-//make the needle image
-var needleImage =Ti.UI.createImageView({
-	image:'/images/needle.png'
-	});
-	
-//make the waypoint needle image
-var wayneedleImage =Ti.UI.createImageView({
-	image:'/images/newwayneedle.png'
-	});
-	
-//add waypoint info view
-var waypointInfo = Ti.UI.createView({
-	height:waypointBox,
-	width:(Titanium.Platform.displayCaps.platformWidth-(2*waypointboxmargin)), 
-	// too small on retina, just right on iphone 5, so use the margin to give a few extra pixels
-	backgroundColor:'#262e2f',
-	bottom: waypointboxmargin, 
-	// same here - get a few extra pixels on non 5
-	borderRadius: 10,
-	borderColor:'black',
-	borderWidth:3
-	
-});
-
-var wayPointTestLabel= Ti.UI.createLabel({text:"No active waypoint", color:"black"});
-
-waypointInfo.add(wayPointTestLabel);
-
 // Create a 2D matrix for the main needle
 var t = Ti.UI.create2DMatrix();
 
@@ -96,103 +49,90 @@ var a2 = Titanium.UI.createAnimation({transform:t});
 
 
 // Whenever heading is changed, call this
+
 var compassHandler = function(e) {
-  if (e.success === undefined || e.success) {
-   
-  // set the heading
-  heading=Math.round(e.heading.magneticHeading);
+	if (e.success === undefined || e.success) {
 
-  
-  // handle the main needle
-  
-  needleGoto=Math.abs((heading-360));
-  
-  if (needleNow<=needleGoto) {
-  	needleSlew=(needleGoto-needleNow);  	
-  } 
-  
-  if (needleNow>needleGoto) {
-  	needleSlew=(needleGoto+(360-needleNow));
-  }
-  
-  
-  t=t.rotate(needleSlew);
-  
-  needleNow=needleGoto;
-  needleSlew=0;
-   a.transform=t;
-   
-   needleImage.animate(a);
-   
-   headLabel.text=" "+heading+"°";
-  
-   
-   // handle the waypoint needle
-   var bearing=270; // set a bearing for testing
-   
-   // if the heading is greater than the bearing, we must set where the needle needs to go differently
-   if(heading>bearing) {
-   		
-   		wayneedleGoto=(360-heading)+bearing;
-   	
-   } else {
-   		wayneedleGoto=(bearing-heading);
-   }
-   
-   // set the label to the 
-   //needleLabel.text=wayneedleGoto;
+		// set the heading
+		heading = Math.round(e.heading.magneticHeading);
 
-  // figure out how to animate the way needle
-  if (wayneedleNow<wayneedleGoto) {
-  	wayneedleSlew=(wayneedleGoto-wayneedleNow);  
+		// handle the main needle
 
-  } 
-  
-  if (wayneedleNow>wayneedleGoto) {
-  	wayneedleSlew=(wayneedleGoto+(360-wayneedleNow));
- 
-  }
-  
-  if (wayneedleNow===wayneedleGoto) {
-  	wayneedleSlew=0; 
-  
-  }
-  
- 
-  t2=t2.rotate(wayneedleSlew);
-  
-  wayneedleNow=wayneedleGoto;
-  wayneedleSlew=0;
-   
-   a2.transform=t2;
-   
-   wayneedleImage.animate(a2);
-   
-  }
+		needleGoto = Math.abs((heading - 360));
+
+		if (needleNow <= needleGoto) {
+			needleSlew = (needleGoto - needleNow);
+		}
+
+		if (needleNow > needleGoto) {
+			needleSlew = (needleGoto + (360 - needleNow));
+		}
+
+		t = t.rotate(needleSlew);
+
+		needleNow = needleGoto;
+		needleSlew = 0;
+		a.transform = t;
+
+		needleImage.animate(a);
+
+		headLabel.text = " " + heading + "°";
+
+		// handle the waypoint needle
+		var bearing = 270;
+		// set a bearing for testing
+
+		// if the heading is greater than the bearing, we must set where the needle needs to go differently
+		if (heading > bearing) {
+
+			wayneedleGoto = (360 - heading) + bearing;
+
+		} else {
+			wayneedleGoto = (bearing - heading);
+		}
+
+		// set the label to the
+		//needleLabel.text=wayneedleGoto;
+
+		// figure out how to animate the way needle
+		if (wayneedleNow < wayneedleGoto) {
+			wayneedleSlew = (wayneedleGoto - wayneedleNow);
+
+		}
+
+		if (wayneedleNow > wayneedleGoto) {
+			wayneedleSlew = (wayneedleGoto + (360 - wayneedleNow));
+
+		}
+
+		if (wayneedleNow === wayneedleGoto) {
+			wayneedleSlew = 0;
+
+		}
+
+		t2 = t2.rotate(wayneedleSlew);
+
+		wayneedleNow = wayneedleGoto;
+		wayneedleSlew = 0;
+
+		a2.transform = t2;
+
+		wayneedleImage.animate(a2);
+
+	}
 }
+
 
 Ti.Geolocation.addEventListener("heading", compassHandler);
 
-//
-// create base UI tab and root window
-//
-var win1 = Titanium.UI.createWindow({  
-    title:'Compass',
-    backgroundColor:'#fff',
-    backgroundImage:backgroundImage
-});
+// this require is only used for testing
+// require should be declared at the beginning of the file
+var ui = require('ui');
 var tab1 = Titanium.UI.createTab({  
     icon:'compass.png',
     title:'Compass',
-    window:win1
+    window:ui.makeCompassWindow()
 });
-
-
-win1.add(headLabel);
-win1.add(wayneedleImage);
-win1.add(waypointInfo);
-//win1.add(needleLabel);
-win1.add(needleImage);
 
 
 // 
