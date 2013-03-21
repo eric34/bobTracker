@@ -290,6 +290,17 @@ var bearvalueLabel=Ti.UI.createLabel({color:'white', top:10});
 
 //var currentLocation=Ti.UI.createLabel({text:"Current", top:30});
 
+	var longitude = 0;
+	var latitude = 0;
+	var altitude = 0;
+	var heading = 0;
+	var accuracy = 0;
+	var speed = 0;
+	var timestamp = 0;
+	var altitudeAccuracy = 0; 
+
+
+
 Titanium.Geolocation.getCurrentPosition(function(e)
 			{
 				
@@ -301,26 +312,26 @@ Titanium.Geolocation.getCurrentPosition(function(e)
 					return;
 				}
 		
-				var longitude = e.coords.longitude;
-				var latitude = e.coords.latitude;
-				var altitude = e.coords.altitude;
-				var heading = e.coords.heading;
-				var accuracy = e.coords.accuracy;
-				var speed = e.coords.speed;
-				var timestamp = e.coords.timestamp;
-				var altitudeAccuracy = e.coords.altitudeAccuracy;
+				longitude = e.coords.longitude;
+				latitude = e.coords.latitude;
+				altitude = e.coords.altitude;
+				heading = e.coords.heading;
+				accuracy = e.coords.accuracy;
+				speed = e.coords.speed;
+				timestamp = e.coords.timestamp;
+				altitudeAccuracy = e.coords.altitudeAccuracy;
 				
 				Ti.API.info('speed ' + speed);
 				//currentLocation.text = 'long:' + longitude + ' lat: ' + latitude;
 			
-				alert('geo - current location: ' + new Date(timestamp) + ' long ' + longitude + ' lat ' + latitude + ' accuracy ' + accuracy);
-			
+				//alert('geo - current location: ' + new Date(timestamp) + ' long ' + longitude + ' lat ' + latitude + ' accuracy ' + accuracy);
+			 Ti.API.info('geo - current location: ' + new Date(timestamp) + ' long ' + longitude + ' lat ' + latitude + ' accuracy ' + accuracy);
 
 				///////////////////////////////////////////
 				////    BEGIN THE MATH!!!!!        ///////
 				//////////////////////////////////////////
 				var lat1=latitude;
-				var lon1=-longitude;
+				var lon1=longitude;
 				//var lat1=37.288300;
 				//var lon1=-122.89200;
 				
@@ -338,6 +349,7 @@ Titanium.Geolocation.getCurrentPosition(function(e)
 					
 				var R = 6371; // km
 				var dLat = (lat2-lat1).toRad();
+				Ti.API.info
 				var dLon = (lon2-lon1).toRad();
 				var lat1 = lat1.toRad();
 				var lat2 = lat2.toRad();
@@ -346,15 +358,16 @@ Titanium.Geolocation.getCurrentPosition(function(e)
 				        Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
 				var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
 				var d = R * c;
-				alert(d);
-				var miles = (d/1.6);
+				Ti.API.info("D is: "+d);
+				var miles = Math.round((d/1.6)*10)/10;
+				Ti.API.info("Miles is: "+miles);
 				
 				// calculate the bearing
 				var y = Math.sin(dLon) * Math.cos(lat2);
 				var x = Math.cos(lat1)*Math.sin(lat2) -
 				        Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
 				var brng = Math.atan2(y, x).toDeg();
-				var bearing=(brng+360) % 360; 
+				var bearing=Math.round(((brng+360) % 360)); 
 				
 				distvalueLabel.text=(miles);
 				bearvalueLabel.text=(bearing);
@@ -363,6 +376,7 @@ Titanium.Geolocation.getCurrentPosition(function(e)
 
 ///////////////  end the math //////////////////
 /////////////////////////////////
+
 
 
 //var distanceLabel=Ti.UI.createLabel({text:"You are "+miles+" miles from MV", top:50});
@@ -374,6 +388,9 @@ win4.add(distanceLabel);
 win4.add(distvalueLabel);
 win4.add(bearingLabel);
 win4.add(bearvalueLabel);
+
+
+
 
 
 
