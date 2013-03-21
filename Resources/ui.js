@@ -1,82 +1,230 @@
 var ui={};
-
 module.exports = ui;
 
 ui.makeApplicationTabgroup =function() {
 	var self = Ti.UI.createTabGroup();
-	var compassWindow = ui.makeCompassWindow();
-	var locationWindow = ui.makeLocationWindow();
-	var waypointsWindow = ui.makeWaypointsWindow();
 	
 	var compassTab = Ti.UI.createTab({
 		title: "Compass",
 		icon: 'compass.png',
-		window: compassWindow
+		window: makeCompassWindow()
 	});
 	
 	var waypointsTab = Ti.UI.createTab({
 		title: "Waypoints",
 		icon: 'waypoint.png',
-		window: waypointsWindow
+		window: makeWaypointsWindow()
 	});
 
 	var locationTab = Ti.UI.createTab({
 		title: "Location",
 		icon: 'location.png',
-		window: locationWindow
+		window: makeLocationWindow()
 	});
 
 	self.addTab(compassTab);
 	self.addTab(waypointsTab);
 	self.addTab(locationTab);
-
+	
+	Ti.API.info('creating tab group');
+	
 	return self;
 }
 
-ui.makeBasicWindow = function() {
-			
-	// Assume iPhone 4, and set some stuff
-	var backgroundImage='/images/newCompass@2x.png';
-	var degreeLabelTop=10;
-	var waypointBox=30;
-	var backgroundColor='#262e2f';
+// Don't need to put the below functions in the ui namespace; they'll only be used by makeApplicationTabgroup
+var makeCompassWindow = function() {
+	
+	// Assume iPhone not 5, and set some stuff
+	var backgroundImage = '/images/newCompass@2x.png';
+	var degreeLabelTop = 10;
+	var waypointBox = 75;
+	var waypointboxmargin=5;
 	
 	// check for iPhone 5, and set stuff if so
-	if (Titanium.Platform.displayCaps.platformHeight===568) {
-		isIphone5=true;
-		backgroundImage='/images/newCompass-568h@2x.png';
-		degreeLabelTop=40;
-		waypointBox=50;
-		}
-		
+	if (Titanium.Platform.displayCaps.platformHeight === 568) {
+		isIphone5 = true;
+		backgroundImage = '/images/newCompass-568h@2x.png';
+		degreeLabelTop = 40;
+		waypointBox = 50;
+	}
 	
-	var self = Ti.UI.createWindow({
-		backgroundColor:'#262e2f'	
+	var win = Titanium.UI.createWindow({  
+	    title:'Compass',
+	    backgroundColor:'#fff',
+	    backgroundImage:backgroundImage
+	});	
+
+	// make a couple labels to show some data
+	var headLabel = Ti.UI.createLabel({
+		text : " 0°",
+		top : degreeLabelTop,
+		width : 150,
+		color : 'white',
+		font : { fontSize : 48 },
+		textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
+	}); 
+
+	var needleImage = Ti.UI.createImageView({
+		image : '/images/needle.png'
 	});
+
+	//make the waypoint needle image
+	var wayneedleImage = Ti.UI.createImageView({
+		image : '/images/newwayneedle.png'
+	});
+
+	//add waypoint info view
+	var waypointInfo = Ti.UI.createView({
+		height : waypointBox,
+		width : (Titanium.Platform.displayCaps.platformWidth - (2 * waypointboxmargin)),
+		// too small on retina, just right on iphone 5, so use the margin to give a few extra pixels
+		backgroundColor : '#262e2f',
+		bottom : waypointboxmargin,
+		// same here - get a few extra pixels on non 5
+		borderRadius : 10,
+		borderColor : 'black',
+		borderWidth : 3
+
+	});
+
+	var wayPointTestLabel = Ti.UI.createLabel({
+		text : "No active waypoint",
+		color : "black"
+	});
+	waypointInfo.add(wayPointTestLabel); 
+
+	win.add(headLabel);
+	win.add(wayneedleImage);
+	win.add(waypointInfo);
+	win.add(needleImage);
+	
+	return win;
 }
 
-ui.makeCompassWindow = function() {
+var makeWaypointsWindow = function () {
 	
-	// Assume iPhone 4, and set some stuff
-	var backgroundImage='/images/newCompass@2x.png';
-	var degreeLabelTop=10;
-	var waypointBox=30;
+	var addButton = Ti.UI.createButton({
+		title : "Add"
+	});
+	var win = Titanium.UI.createWindow({
+		title : 'Waypoints',
+		backgroundColor : '#fff',
+		rightNavButton : addButton
+	}); 
 	
-	// check for iPhone 5, and set stuff if so
-	if (Titanium.Platform.displayCaps.platformHeight===568) {
-		isIphone5=true;
-		backgroundImage='/images/newCompass-568h@2x.png';
-		degreeLabelTop=40;
-		waypointBox=50;
-		}
+	// create table view data object
+	// move this to PositionData.js
+	var data = [
+		{title:'Pegati Lake Outlet', wayLatitude:59.8793306, wayLongitude:-160.1266278, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
+		{title:'Paiyun Creek', wayLatitude:59.8914972, wayLongitude:-160.3706333, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
+		{title:'Kanuktik Creek', wayLatitude:59.8737222, wayLongitude:-160.4757, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
+		{title:'Nakgil Creek', wayLatitude:59.854, wayLongitude:-160.6997417, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
+		{title:'Sam Creek', wayLatitude:59.79305, wayLongitude:-160.7500778, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
+		{title:'Klak Creek', wayLatitude:59.7805111, wayLongitude:-160.7705944, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
+		{title:'Nukluk Creek', wayLatitude:59.7248556, wayLongitude:-160.9935833, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
+		{title:'Kanektok Weir', wayLatitude:59.7672306, wayLongitude:-161.0606194, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
+		{title:'Duncan Bros. Upper Camp', wayLatitude:59.8197056, wayLongitude:-161.3057944, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
+		{title:'Duncan Bros. Lower Camp', wayLatitude:59.8076583, wayLongitude:-161.5480722, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
+		{title:'Togiak Refuge Border', wayLatitude:59.8043667, wayLongitude:-161.5887778, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
+		{title:'Alaska West Camp', wayLatitude:59.7794167, wayLongitude:-161.7716167, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
+		{title:'Pull Out', wayLatitude:59.7565583, wayLongitude:-161.8846028, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
+		{title:'On the corner', wayLatitude:37.337681, wayLongitude:-122.038193, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
+	];
 	
+	var headerView = Ti.UI.createView({height:Ti.UI.SIZE,width:Ti.UI.SIZE});
+	var myTestText = Ti.UI.createLabel({text:"Default waypoints",color:'white',left: 10, top:15,width:Ti.UI.SIZE,font : { fontSize: 18, fontWeight:'bold'}});
+	headerView.add(myTestText);
 	
+	var tableViewOptions = {
+		data : data,
+		headerView : headerView,
+		//headerTitle:'Default waypoints',
+		//headerColor:'white',
+		//backgroundImage:backgroundImage,
+		backgroundColor : '#262e2f',
+		rowBackgroundColor : 'white',
+		style : Titanium.UI.iPhone.TableViewStyle.GROUPED
+	}; 
+	
+	var tableview = Titanium.UI.createTableView(tableViewOptions);
+	win.add(tableview);
+	
+	return win;
 }
 
-ui.makeLocationWindow = function () {
+ui.distvalueLabel = Ti.UI.createLabel({color:'white', top:5});
+ui.bearingLabel = Ti.UI.createLabel({text:"Waypoint bearing is degrees", color:'white', top:5});
+var makeLocationWindow = function () {
 	
-}
+	var win = Titanium.UI.createWindow({
+		title : 'Location',
+		layout : 'vertical',
+		backgroundColor : '#262e2f'
+	}); 
+	
+	// make some labels for Mountain View TESTING
+	var distanceLabel=Ti.UI.createLabel({text:"You are this many miles from MV:", color:'white', top:5});
+	// var distvalueLabel=Ti.UI.createLabel({color:'white', top:5});
+	// var bearingLabel=Ti.UI.createLabel({text:"Waypoint bearing is degrees", color:'white', top:5});
+	var bearvalueLabel=Ti.UI.createLabel({color:'white', top:5});
+	
+	// make some labels for the various data points for current location
+	var currentLocationLabel=Ti.UI.createLabel({text:"Current Location", left: 5, color:'white', top:5});
+	var currentLatLabel=Ti.UI.createLabel({text:"Latitude:", left: 10, color:'white', top:5});
+	var currentLonLabel=Ti.UI.createLabel({text:"Longitude:", left: 10, color:'white', top:5});
+	var currentAltLabel=Ti.UI.createLabel({text:"Altitude:", left: 10, color:'white', top:5});
+	
+	// make the current location view
+	var currentLocationView = Ti.UI.createView({
+		borderRadius : 10,
+		borderColor : 'black',
+		layout: 'vertical',
+		borderWidth : 3,
+		top:3,
+		height: '33%'
+	
+	});
+	
+	// make the active waypoint view
+	var activeWaypointView = Ti.UI.createView({
+		borderRadius : 10,
+		borderColor : 'black',
+		layout: 'vertical',
+		borderWidth : 3,
+		height: '33%'
+	
+	});
+	
+	// make the pull out waypoint view
+	var pulloutWaypointView = Ti.UI.createView({
+		borderRadius : 10,
+		borderColor : 'black',
+		layout: 'vertical',
+		borderWidth : 3,
+		height: '33%'
+	
+	});
+	
+	// add the current location labels
+	currentLocationView.add(currentLocationLabel);
+	currentLocationView.add(currentLatLabel);
+	currentLocationView.add(currentLonLabel);
+	currentLocationView.add(currentAltLabel);
+	
+	// add some labels for the pull oout section
+	pulloutWaypointView.add(distanceLabel);
+	// pulloutWaypointView.add(distvalueLabel);
+	// pulloutWaypointView.add(bearingLabel);
+	pulloutWaypointView.add(ui.distvalueLabel);
+	pulloutWaypointView.add(ui.bearingLabel);
+	pulloutWaypointView.add(bearvalueLabel);
+	
+	
+	//add the info views
+	win.add(currentLocationView);
+	win.add(activeWaypointView);
+	win.add(pulloutWaypointView);
 
-ui.makeWaypointsWindow = function () {
 	
+	return win;
 }
