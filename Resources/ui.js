@@ -26,9 +26,9 @@ ui.makeApplicationTabgroup =function() {
 		window: locationWindow
 	});
 
-	self.add(compassTab);
-	self.add(waypointsTab);
-	self.add(locationTab);
+	self.addTab(compassTab);
+	self.addTab(waypointsTab);
+	self.addTab(locationTab);
 
 	return self;
 }
