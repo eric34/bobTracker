@@ -15,7 +15,7 @@ Ti.Geolocation.preferredProvider = "gps";
 if (isIPhone3_2_Plus()) {
 	//NOTE: starting in 3.2+, you'll need to set the applications
 	//purpose property for using Location services on iPhone
-	Ti.Geolocation.purpose = "GPS demo";
+	Ti.Geolocation.purpose = "Teppy TrekTracker";
 }
 
 function translateErrorCode(code) {
@@ -152,6 +152,7 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 	//
 	// GET CURRENT POSITION - THIS FIRES ONCE
 	//
+	// ---------------------- > from here I have to make this a callable function from the windows themselves.
 	win.addEventListener('open', function() {
 		win.openedflag = 1;
 		Titanium.Geolocation.getCurrentPosition(function(e) {
@@ -208,14 +209,17 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 		timestamp = e.coords.timestamp;
 		altitudeAccuracy = e.coords.altitudeAccuracy;
 
-		//Titanium.Geolocation.distanceFilter = 100; //changed after first location event
-
 		Titanium.API.info('geo - location updated: ' + new Date(timestamp) + ' long ' + longitude + ' lat ' + latitude + ' accuracy ' + accuracy);
 	};
 	Titanium.Geolocation.addEventListener('location', locationCallback);
 	locationAdded = true;
 
 }
+
+// ---------------------- > from here I have to make these callable functions from the windows themselves.
+// the variables used as window properties for these is: 	
+// win.openedflag = 0 ;
+// win.focusedflag = 0;
 
 win.addEventListener('focus', function() {
 	win.focusedflag = 1;
