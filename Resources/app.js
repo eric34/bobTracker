@@ -205,7 +205,6 @@ var tab3 = Titanium.UI.createTab({
 //
 
 
-
 var win4 = Titanium.UI.createWindow({  
     title:'Location',
     layout:'vertical',
@@ -217,103 +216,161 @@ var tab4 = Titanium.UI.createTab({
     window:win4
 });
 	
-	
+// for testing the waypoint coordinate, I use this MV set instead until the math works
 var endLatitude=37.337681;
 var endLongitude=-122.038193;
 
 
-// make some labels
-var distanceLabel=Ti.UI.createLabel({text:"You are this many miles from MV:", color:'white', top:30});
-var distvalueLabel=Ti.UI.createLabel({color:'white', top:10});
-var bearingLabel=Ti.UI.createLabel({text:"Waypoint bearing is degrees", color:'white', top:50});
-var bearvalueLabel=Ti.UI.createLabel({color:'white', top:10});
+// These should already be in the geo.js file, but should be added if not
+	var longitude = 0;
+	var latitude = 0;
+	var altitude = 0;
+	var heading = 0;
+	var accuracy = 0;
+	var speed = 0;
+	var timestamp = 0;
+	var altitudeAccuracy = 0; 
 
-//var currentLocation=Ti.UI.createLabel({text:"Current", top:30});
+// make some labels for Mountain View TESTING
+var distanceLabel=Ti.UI.createLabel({text:"You are this many miles from MV:", color:'white', top:5});
+var distvalueLabel=Ti.UI.createLabel({color:'white', top:5});
+var bearingLabel=Ti.UI.createLabel({text:"Waypoint bearing is degrees", color:'white', top:5});
+var bearvalueLabel=Ti.UI.createLabel({color:'white', top:5});
 
-Titanium.Geolocation.getCurrentPosition(function(e)
-			{
-				
-				if (!e.success || e.error)
-				{
-					//currentLocation.text = 'error: ' + JSON.stringify(e.error);
-					//Ti.API.info("Code translation: "+translateErrorCode(e.code));
-					alert('error ' + JSON.stringify(e.error));
-					return;
-				}
-		
-				var longitude = e.coords.longitude;
-				var latitude = e.coords.latitude;
-				var altitude = e.coords.altitude;
-				var heading = e.coords.heading;
-				var accuracy = e.coords.accuracy;
-				var speed = e.coords.speed;
-				var timestamp = e.coords.timestamp;
-				var altitudeAccuracy = e.coords.altitudeAccuracy;
-				
-				Ti.API.info('speed ' + speed);
-				//currentLocation.text = 'long:' + longitude + ' lat: ' + latitude;
-			
-				alert('geo - current location: ' + new Date(timestamp) + ' long ' + longitude + ' lat ' + latitude + ' accuracy ' + accuracy);
-			
-
-				///////////////////////////////////////////
-				////    BEGIN THE MATH!!!!!        ///////
-				//////////////////////////////////////////
-				var lat1=latitude;
-				var lon1=-longitude;
-				//var lat1=37.288300;
-				//var lon1=-122.89200;
-				
-				var lat2=37.337681;
-				var lon2=-122.038193;
-				
-				Number.prototype.toRad = function() {
-				   return this * Math.PI / 180;
-				}
-				
-				Number.prototype.toDeg = function() {
-				   return this * 180 / Math.PI;
-				}
-				
-					
-				var R = 6371; // km
-				var dLat = (lat2-lat1).toRad();
-				var dLon = (lon2-lon1).toRad();
-				var lat1 = lat1.toRad();
-				var lat2 = lat2.toRad();
-				
-				var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-				        Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
-				var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-				var d = R * c;
-				alert(d);
-				var miles = (d/1.6);
-				
-				// calculate the bearing
-				var y = Math.sin(dLon) * Math.cos(lat2);
-				var x = Math.cos(lat1)*Math.sin(lat2) -
-				        Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
-				var brng = Math.atan2(y, x).toDeg();
-				var bearing=(brng+360) % 360; 
-				
-				distvalueLabel.text=(miles);
-				bearvalueLabel.text=(bearing);
-			});
+// make some labels for the various data points for current location
+var currentLocationLabel=Ti.UI.createLabel({text:"Current Location", left: 5, color:'white', top:5});
+var currentLatLabel=Ti.UI.createLabel({text:"Latitude:", left: 10, color:'white', top:5});
+var currentLonLabel=Ti.UI.createLabel({text:"Longitude:", left: 10, color:'white', top:5});
+var currentAltLabel=Ti.UI.createLabel({text:"Altitude:", left: 10, color:'white', top:5});
 
 
-///////////////  end the math //////////////////
-/////////////////////////////////
+
+	// this currently fires only once, but should be replaced with the fully functional geo.js file
+	Titanium.Geolocation.getCurrentPosition(function(e) {
+
+		if (!e.success || e.error) {
+			//currentLocation.text = 'error: ' + JSON.stringify(e.error);
+			//Ti.API.info("Code translation: "+translateErrorCode(e.code));
+			alert('error ' + JSON.stringify(e.error));
+			return;
+		}
+
+		longitude = e.coords.longitude;
+		latitude = e.coords.latitude;
+		altitude = e.coords.altitude;
+		heading = e.coords.heading;
+		accuracy = e.coords.accuracy;
+		speed = e.coords.speed;
+		timestamp = e.coords.timestamp;
+		altitudeAccuracy = e.coords.altitudeAccuracy;
+
+		Ti.API.info('speed ' + speed);
+		//currentLocation.text = 'long:' + longitude + ' lat: ' + latitude;
+
+		//alert('geo - current location: ' + new Date(timestamp) + ' long ' + longitude + ' lat ' + latitude + ' accuracy ' + accuracy);
+		Ti.API.info('geo - current location: ' + new Date(timestamp) + ' long ' + longitude + ' lat ' + latitude + ' accuracy ' + accuracy);
+
+		// the math part should be moved to the geo.js file
+		///////////////////////////////////////////
+		////    BEGIN THE MATH!!!!!        ///////
+		//////////////////////////////////////////
+		var lat1 = latitude;
+		var lon1 = longitude;
+		//var lat1=37.288300;
+		//var lon1=-122.89200;
+
+		var lat2 = 37.337681;
+		var lon2 = -122.038193;
+
+		Number.prototype.toRad = function() {
+			return this * Math.PI / 180;
+		}
+
+		Number.prototype.toDeg = function() {
+			return this * 180 / Math.PI;
+		}
+		var R = 6371;
+		// km
+		var dLat = (lat2 - lat1).toRad();
+		Ti.API.info
+		var dLon = (lon2 - lon1).toRad();
+		var lat1 = lat1.toRad();
+		var lat2 = lat2.toRad();
+
+		var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+		var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+		var d = R * c;
+		Ti.API.info("D is: " + d);
+		var miles = Math.round((d / 1.6) * 10) / 10;
+		Ti.API.info("Miles is: " + miles);
+
+		// calculate the bearing
+		var y = Math.sin(dLon) * Math.cos(lat2);
+		var x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+		var brng = Math.atan2(y, x).toDeg();
+		var bearing = Math.round(((brng + 360) % 360));
+
+		distvalueLabel.text = (miles);
+		bearvalueLabel.text = (bearing);
+	}); 
+
+			//////////////////////////////////
+			///////////////  end the math ///
+			/////////////////////////////////
 
 
-//var distanceLabel=Ti.UI.createLabel({text:"You are "+miles+" miles from MV", top:50});
-//var bearingLabel=Ti.UI.createLabel({text:"Waypoint bearing is "+brng+" degrees", top:50});
+// make the current location view
+var currentLocationView = Ti.UI.createView({
+	borderRadius : 10,
+	borderColor : 'black',
+	layout: 'vertical',
+	borderWidth : 3,
+	top:3,
+	height: '33%'
 
-// add some labels
-//win4.add(currentLocation);
-win4.add(distanceLabel);
-win4.add(distvalueLabel);
-win4.add(bearingLabel);
-win4.add(bearvalueLabel);
+});
+
+// make the active waypoint view
+var activeWaypointView = Ti.UI.createView({
+	borderRadius : 10,
+	borderColor : 'black',
+	layout: 'vertical',
+	borderWidth : 3,
+	height: '33%'
+
+});
+
+// make the pull out waypoint view
+var pulloutWaypointView = Ti.UI.createView({
+	borderRadius : 10,
+	borderColor : 'black',
+	layout: 'vertical',
+	borderWidth : 3,
+	height: '33%'
+
+});
+
+
+
+// add the current location labels
+currentLocationView.add(currentLocationLabel);
+currentLocationView.add(currentLatLabel);
+currentLocationView.add(currentLonLabel);
+currentLocationView.add(currentAltLabel);
+
+// add some labels for the pull oout section
+pulloutWaypointView.add(distanceLabel);
+pulloutWaypointView.add(distvalueLabel);
+pulloutWaypointView.add(bearingLabel);
+pulloutWaypointView.add(bearvalueLabel);
+
+
+//add the info views
+win4.add(currentLocationView);
+win4.add(activeWaypointView);
+win4.add(pulloutWaypointView);
+
+
 
 
 
