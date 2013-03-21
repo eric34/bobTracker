@@ -35,7 +35,7 @@ ui.makeApplicationTabgroup =function() {
 
 ui.makeBasicWindow = function() {
 			
-	// Assume iPhone not 5, and set some stuff
+	// Assume iPhone 4, and set some stuff
 	var backgroundImage='/images/newCompass@2x.png';
 	var degreeLabelTop=10;
 	var waypointBox=30;
@@ -57,7 +57,7 @@ ui.makeBasicWindow = function() {
 
 ui.makeCompassWindow = function() {
 	
-	// Assume iPhone not 5, and set some stuff
+	// Assume iPhone 4, and set some stuff
 	var backgroundImage='/images/newCompass@2x.png';
 	var degreeLabelTop=10;
 	var waypointBox=30;
