@@ -70,9 +70,9 @@ var compassHandler = function(e) {
 		needleSlew = 0;
 		a.transform = t;
 
-		needleImage.animate(a);
+		ui.needleImage.animate(a);
 
-		headLabel.text = " " + heading + "°";
+		ui.headLabel.text = " " + heading + "°";
 
 		// handle the waypoint needle
 		var bearing = 270;
@@ -113,8 +113,7 @@ var compassHandler = function(e) {
 
 		a2.transform = t2;
 
-		wayneedleImage.animate(a2);
-
+		ui.wayneedleImage.animate(a2);
 	}
 }
 
