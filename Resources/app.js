@@ -1,6 +1,8 @@
 // Require external files first; similar practice to Java's import or C++ include
 var ui = require('ui');
 var pd = require('PositionData');
+// this is almost ready to go:
+//var geo =require('geo');
 
 var mainTabGroup = ui.makeApplicationTabgroup();
 mainTabGroup.open();
@@ -15,22 +17,16 @@ Ti.Geolocation.purpose = "GPS Location Finding";
 // This sets the compass update to happen every 1 degree of rotation
 Titanium.Geolocation.headingFilter = 1;
 
-// This file will help persist Position data
-//var pd = require('PositionData');
-
-// What this does I am unsure
-//var addPoint= require('PositionData').add;
-
 //track where I think the main needle should be
-var needleNow=0;
-var needleGoto=0;
-var heading=0;
-var needleSlew=0;
+var needleNow = 0;
+var needleGoto = 0;
+var heading = 0;
+var needleSlew = 0;
 
 //track where I think the way point needle should be
-var wayneedleNow=0;
-var wayneedleGoto=0;
-var wayneedleSlew=0;
+var wayneedleNow = 0;
+var wayneedleGoto = 0;
+var wayneedleSlew = 0;
 
 // Create a 2D matrix for the main needle
 var t = Ti.UI.create2DMatrix();
@@ -39,11 +35,14 @@ var t = Ti.UI.create2DMatrix();
 var t2 = Ti.UI.create2DMatrix();
 
 // Create an animation using the 2D matrix for the main needle
-var a = Titanium.UI.createAnimation({transform:t});
+var a = Titanium.UI.createAnimation({
+	transform : t
+});
 
 // Create an animation using the 2D matrix for the waypoint needle
-var a2 = Titanium.UI.createAnimation({transform:t});
-
+var a2 = Titanium.UI.createAnimation({
+	transform : t
+});
 
 // Whenever heading is changed, call this
 var compassHandler = function(e) {
@@ -118,12 +117,11 @@ var compassHandler = function(e) {
 	}
 }
 
-
 Ti.Geolocation.addEventListener("heading", compassHandler);
-	
+
 // for testing the waypoint coordinate, I use this MV set instead until the math works
-var endLatitude=37.337681;
-var endLongitude=-122.038193;
+var endLatitude = 37.337681;
+var endLongitude = -122.038193;
 
 // These should already be in the geo.js file, but should be added if not
 var longitude = 0;
@@ -133,7 +131,7 @@ var heading = 0;
 var accuracy = 0;
 var speed = 0;
 var timestamp = 0;
-var altitudeAccuracy = 0; 
+var altitudeAccuracy = 0;
 
 // this currently fires only once, but should be replaced with the fully functional geo.js file
 Titanium.Geolocation.getCurrentPosition(function(e) {
@@ -153,6 +151,13 @@ Titanium.Geolocation.getCurrentPosition(function(e) {
 	speed = e.coords.speed;
 	timestamp = e.coords.timestamp;
 	altitudeAccuracy = e.coords.altitudeAccuracy;
+	
+	
+	// set the info in the location screen
+	ui.currentLatLabel.text = ("Latitude: "+latitude);
+	ui.currentLonLabel.text = ("Longitude: "+longitude);
+	ui.currentAltLabel.text = ("Altitude: "+altitude);
+	
 
 	Ti.API.info('speed ' + speed);
 	//currentLocation.text = 'long:' + longitude + ' lat: ' + latitude;
