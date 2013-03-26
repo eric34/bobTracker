@@ -1,8 +1,7 @@
-var geo={};
+var geo = {};
 module.exports = geo;
 
-
-// declare variables for position 
+// declare variables for position
 var longitude = 0;
 var latitude = 0;
 var altitude = 0;
@@ -113,13 +112,13 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 			timestamp = e.heading.timestamp;
 
 			// set the labels - if the user wants magnetic, use magnetic
-			if (headingPref==='mag') {
-				heading=Math.round(magneticHeading);
-			} else { 
+			if (headingPref === 'mag') {
+				heading = Math.round(magneticHeading);
+			} else {
 				// or they want true
-				heading=Math.round(trueHeading);
+				heading = Math.round(trueHeading);
 			}
-				
+
 			ui.headLabel.text = " " + heading + "°";
 
 			Titanium.API.info('geo - current heading: ' + new Date(timestamp));
@@ -139,16 +138,16 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 			accuracy = e.heading.accuracy;
 			trueHeading = e.heading.trueHeading;
 			timestamp = e.heading.timestamp;
-			
+
 			// Eric's addition is here: maybe combine this and the one-shot function above to be one label-update mechanism
 			// set the labels - if the user wants magnetic, use magnetic
-			if (headingPref==='mag') {
-				heading=Math.round(magneticHeading);
-			} else { 
+			if (headingPref === 'mag') {
+				heading = Math.round(magneticHeading);
+			} else {
 				// or they want true
-				heading=Math.round(trueHeading);
+				heading = Math.round(trueHeading);
 			}
-				
+
 			ui.headLabel.text = " " + heading + "°";
 
 			Titanium.API.info('geo - heading updated: ' + new Date(timestamp));
@@ -199,13 +198,12 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 			timestamp = e.coords.timestamp;
 			altitudeAccuracy = e.coords.altitudeAccuracy;
 			Ti.API.info('speed ' + speed);
-			
+
 			// set the info in the location screen
-			ui.currentLatLabel.text = ("Latitude: "+latitude);
-			ui.currentLonLabel.text = ("Longitude: "+longitude);
-			ui.currentAltLabel.text = ("Altitude: "+altitude);
-			ui.currentSpeedLabel.text = ("Speed: "+speed);
-	
+			ui.currentLatLabel.text = ("Latitude: " + latitude);
+			ui.currentLonLabel.text = ("Longitude: " + longitude);
+			ui.currentAltLabel.text = ("Altitude: " + altitude);
+			ui.currentSpeedLabel.text = ("Speed: " + speed);
 
 			Titanium.API.info('geo - current location: ' + new Date(timestamp) + ' long ' + longitude + ' lat ' + latitude + ' accuracy ' + accuracy);
 		});
@@ -251,10 +249,18 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 }
 
 // ---------------------- > from here I have to make these callable functions from the windows themselves.
-// the variables used as window properties for these is: 	
+// the variables used as window properties for these is:
 // win.openedflag = 0 ;
 // win.focusedflag = 0;
 
+/* wluu:
+ * 
+ * you want to do something like this:
+ * geo.listeningTo(win) {
+ * 		win.addEventListener('focus', function() {...});
+ * }
+ * 
+ */
 win.addEventListener('focus', function() {
 	win.focusedflag = 1;
 	Ti.API.info("focus event received");
@@ -271,6 +277,14 @@ win.addEventListener('focus', function() {
 
 });
 
+/* wluu:
+ * 
+ * you want to do something like this:
+ * geo.stopListeningTo(win) {
+ * 		win.addEventListener('blur', function() {...});
+ * }
+ * 
+ */
 win.addEventListener('blur', function() {
 	Ti.API.info("pause event received");
 	if (headingAdded) {
