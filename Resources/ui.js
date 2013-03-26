@@ -1,33 +1,41 @@
 var ui={};
 module.exports = ui;
 
-ui.makeApplicationTabgroup =function() {
+// making compassWindow, waypointsWindow, and locationWindow available to other files
+// these windows object can be used with geo.js
+// these windows won't be created until you makeApplicationTabgroup
+ui.compassWindow = undefined;
+ui.waypointsWindow = undefined;
+ui.locationWindow = undefined;
+ui.makeApplicationTabgroup = function() {
 	var self = Ti.UI.createTabGroup();
+	
+	ui.compassWindow = makeCompassWindow();
+	ui.waypointsWindow = makeWaypointsWindow();
+	ui.locationWindow = makeLocationWindow();
 	
 	var compassTab = Ti.UI.createTab({
 		title: "Compass",
 		icon: 'compass.png',
-		window: makeCompassWindow()
+		window: ui.compassWindow
 	});
 	
 	var waypointsTab = Ti.UI.createTab({
 		title: "Waypoints",
 		icon: 'waypoint.png',
-		window: makeWaypointsWindow()
+		window: ui.waypointsWindow
 	});
 
 	var locationTab = Ti.UI.createTab({
 		title: "Location",
 		icon: 'location.png',
-		window: makeLocationWindow()
+		window: ui.locationWindow
 	});
 
 	self.addTab(compassTab);
 	self.addTab(waypointsTab);
 	self.addTab(locationTab);
-	
-	Ti.API.info('creating tab group');
-	
+		
 	return self;
 }
 
@@ -123,7 +131,7 @@ var makeWaypointsWindow = function () {
 	}); 
 	
 	// create table view data object
-	// move this to PositionData.js
+	// move this to PositionData.js ???
 	var data = [
 		{title:'Pegati Lake Outlet', wayLatitude:59.8793306, wayLongitude:-160.1266278, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
 		{title:'Paiyun Creek', wayLatitude:59.8914972, wayLongitude:-160.3706333, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
