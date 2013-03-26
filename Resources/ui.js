@@ -37,7 +37,7 @@ ui.makeApplicationTabgroup =function() {
 // ###################################################################### 
 // The following variables are being used by ui.headLabel and makeCompassWindow()
 
-// Assume iPhone not 5, and set some stuff
+// Assume iPhone 4 and set some stuff
 var backgroundImage = '/images/newCompass@2x.png';
 var degreeLabelTop = 10;
 var waypointBox = 75;
@@ -48,7 +48,7 @@ if (Titanium.Platform.displayCaps.platformHeight === 568) {
 	isIphone5 = true;
 	backgroundImage = '/images/newCompass-568h@2x.png';
 	ui.degreeLabelTop = 40;
-	waypointBox = 50;
+	waypointBox = 120;
 }
 
 // ######################################################################
@@ -72,12 +72,15 @@ ui.wayneedleImage = Ti.UI.createImageView({
 
 var makeCompassWindow = function() {
 	
+	
 	var win = Titanium.UI.createWindow({  
 	    title:'Compass',
 	    backgroundColor:'#fff',
-	    backgroundImage:backgroundImage
+	    backgroundImage:backgroundImage,
+	    barColor:'#18223c'
 	});	
 
+	
 	//add waypoint info view
 	var waypointInfo = Ti.UI.createView({
 		height : waypointBox,
@@ -96,6 +99,7 @@ var makeCompassWindow = function() {
 		text : "No active waypoint",
 		color : "black"
 	});
+	
 	waypointInfo.add(wayPointTestLabel); 
 
 	win.add(ui.headLabel);
@@ -114,7 +118,8 @@ var makeWaypointsWindow = function () {
 	var win = Titanium.UI.createWindow({
 		title : 'Waypoints',
 		backgroundColor : '#fff',
-		rightNavButton : addButton
+		rightNavButton : addButton,
+		barColor:'#18223c'
 	}); 
 	
 	// create table view data object
@@ -134,11 +139,14 @@ var makeWaypointsWindow = function () {
 		{title:'Alaska West Camp', wayLatitude:59.7794167, wayLongitude:-161.7716167, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
 		{title:'Pull Out', wayLatitude:59.7565583, wayLongitude:-161.8846028, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
 		{title:'On the corner', wayLatitude:37.337681, wayLongitude:-122.038193, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
+		{title:'Mountain View', wayLatitude:37.337681, wayLongitude:-122.038193, hasChild:true, color:'#000', font:{fontWeight : 'bold'}}
 	];
 	
+	// make a header view for the sction - this one is "default waypoints"
 	var headerView = Ti.UI.createView({height:Ti.UI.SIZE,width:Ti.UI.SIZE});
 	var myTestText = Ti.UI.createLabel({text:"Default waypoints",color:'white',left: 10, top:15,width:Ti.UI.SIZE,font : { fontSize: 18, fontWeight:'bold'}});
 	headerView.add(myTestText);
+	
 	
 	var tableViewOptions = {
 		data : data,
@@ -158,34 +166,76 @@ var makeWaypointsWindow = function () {
 }
 
 
+// make some labels for Mountain View TESTING
+ui.distanceLabel = Ti.UI.createLabel({
+	text : "You are this many miles from MV:",
+	color : 'white',
+	top : 5
+});
+// var distvalueLabel=Ti.UI.createLabel({color:'white', top:5});
+// var bearingLabel=Ti.UI.createLabel({text:"Waypoint bearing is degrees", color:'white', top:5});
+ui.bearvalueLabel = Ti.UI.createLabel({
+	color : 'white',
+	top : 5
+});
 ui.distvalueLabel = Ti.UI.createLabel({
 	color : 'white',
 	top : 5
 });
-
-ui.bearvalueLabel = Ti.UI.createLabel({
+ui.bearingLabel = Ti.UI.createLabel({
+	text : "Waypoint bearing is degrees",
 	color : 'white',
 	top : 5
-}); 
+});
+
+// make some labels for the various data points for current location
+ui.currentLocationLabel = Ti.UI.createLabel({
+	text : "Current Location",
+	left : 5,
+	color : 'white',
+	top : 5
+});
+ui.currentLatLabel = Ti.UI.createLabel({
+	text : "Latitude:",
+	left : 10,
+	color : 'white',
+	top : 5
+});
+ui.currentLonLabel = Ti.UI.createLabel({
+	text : "Longitude:",
+	left : 10,
+	color : 'white',
+	top : 5
+});
+ui.currentAltLabel = Ti.UI.createLabel({
+	text : "Altitude:",
+	left : 10,
+	color : 'white',
+	top : 5
+});
+ui.currentSpeedLabel = Ti.UI.createLabel({
+	text : "Speed:",
+	left : 10,
+	color : 'white',
+	top : 5
+});
+
 var makeLocationWindow = function () {
 	
 	var win = Titanium.UI.createWindow({
 		title : 'Location',
 		layout : 'vertical',
-		backgroundColor : '#262e2f'
+		backgroundColor : '#262e2f',
+		barColor:'#18223c'
 	}); 
 	
 	// make some labels for Mountain View TESTING
 	var distanceLabel=Ti.UI.createLabel({text:"You are this many miles from MV:", color:'white', top:5});
 	// var distvalueLabel=Ti.UI.createLabel({color:'white', top:5});
-	var bearingLabel=Ti.UI.createLabel({text:"Waypoint bearing is degrees", color:'white', top:5});
-	//var bearvalueLabel=Ti.UI.createLabel({color:'white', top:5});
+	// var bearingLabel=Ti.UI.createLabel({text:"Waypoint bearing is degrees", color:'white', top:5});
+	var bearvalueLabel=Ti.UI.createLabel({color:'white', top:5});
 	
-	// make some labels for the various data points for current location
-	var currentLocationLabel=Ti.UI.createLabel({text:"Current Location", left: 5, color:'white', top:5});
-	var currentLatLabel=Ti.UI.createLabel({text:"Latitude:", left: 10, color:'white', top:5});
-	var currentLonLabel=Ti.UI.createLabel({text:"Longitude:", left: 10, color:'white', top:5});
-	var currentAltLabel=Ti.UI.createLabel({text:"Altitude:", left: 10, color:'white', top:5});
+
 	
 	// make the current location view
 	var currentLocationView = Ti.UI.createView({
@@ -219,16 +269,18 @@ var makeLocationWindow = function () {
 	});
 	
 	// add the current location labels
-	currentLocationView.add(currentLocationLabel);
-	currentLocationView.add(currentLatLabel);
-	currentLocationView.add(currentLonLabel);
-	currentLocationView.add(currentAltLabel);
+	currentLocationView.add(ui.currentLocationLabel);
+	currentLocationView.add(ui.currentLatLabel);
+	currentLocationView.add(ui.currentLonLabel);
+	currentLocationView.add(ui.currentAltLabel);
+	currentLocationView.add(ui.currentSpeedLabel);
 	
-	// add some labels for the pull oout section
-	pulloutWaypointView.add(distanceLabel);
+	// add some labels for the pull out section
+	pulloutWaypointView.add(ui.distanceLabel);
 	// pulloutWaypointView.add(distvalueLabel);
+	// pulloutWaypointView.add(bearingLabel);
 	pulloutWaypointView.add(ui.distvalueLabel);
-	pulloutWaypointView.add(bearingLabel);
+	pulloutWaypointView.add(ui.bearingLabel);
 	pulloutWaypointView.add(ui.bearvalueLabel);
 	
 	
