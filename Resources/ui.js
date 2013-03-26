@@ -213,7 +213,12 @@ ui.currentAltLabel = Ti.UI.createLabel({
 	color : 'white',
 	top : 5
 });
-
+ui.currentSpeedLabel = Ti.UI.createLabel({
+	text : "Speed:",
+	left : 10,
+	color : 'white',
+	top : 5
+});
 
 var makeLocationWindow = function () {
 	
@@ -268,6 +273,7 @@ var makeLocationWindow = function () {
 	currentLocationView.add(ui.currentLatLabel);
 	currentLocationView.add(ui.currentLonLabel);
 	currentLocationView.add(ui.currentAltLabel);
+	currentLocationView.add(ui.currentSpeedLabel);
 	
 	// add some labels for the pull out section
 	pulloutWaypointView.add(ui.distanceLabel);
