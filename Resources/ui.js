@@ -31,22 +31,47 @@ ui.makeApplicationTabgroup =function() {
 	return self;
 }
 
-// Don't need to put the below functions in the ui namespace; they'll only be used by makeApplicationTabgroup
+// Some of the object functions below (e.g. var makeCompassWindow) don't need be in the ui namespace
+// They'll only be used by makeApplicationTabgroup
+
+// ###################################################################### 
+// The following variables are being used by ui.headLabel and makeCompassWindow()
+
+// Assume iPhone 4 and set some stuff
+var backgroundImage = '/images/newCompass@2x.png';
+var degreeLabelTop = 10;
+var waypointBox = 75;
+var waypointboxmargin=5;
+
+// check for iPhone 5, and set stuff if so
+if (Titanium.Platform.displayCaps.platformHeight === 568) {
+	isIphone5 = true;
+	backgroundImage = '/images/newCompass-568h@2x.png';
+	ui.degreeLabelTop = 40;
+	waypointBox = 120;
+}
+
+// ######################################################################
+
+ui.headLabel = Ti.UI.createLabel({
+	text : " 0°",
+	top : degreeLabelTop,
+	width : 150,
+	color : 'white',
+	font : { fontSize : 48 },
+	textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
+});
+
+ui.needleImage = Ti.UI.createImageView({
+	image : '/images/needle.png'
+});
+
+ui.wayneedleImage = Ti.UI.createImageView({
+	image : '/images/newwayneedle.png'
+});
+
 var makeCompassWindow = function() {
 	
-	// Assume iPhone 4 and set some stuff
-	var backgroundImage = '/images/newCompass@2x.png';
-	var degreeLabelTop = 10;
-	var waypointBox = 75;
-	var waypointboxmargin=5;
-	
-	// check for iPhone 5, and set stuff if so
-	if (Titanium.Platform.displayCaps.platformHeight === 568) {
-		isIphone5 = true;
-		backgroundImage = '/images/newCompass-568h@2x.png';
-		degreeLabelTop = 40;
-		waypointBox = 120;
-	}
 	
 	var win = Titanium.UI.createWindow({  
 	    title:'Compass',
@@ -55,25 +80,7 @@ var makeCompassWindow = function() {
 	    barColor:'#18223c'
 	});	
 
-	// make a couple labels to show some data
-	var headLabel = Ti.UI.createLabel({
-		text : " 0°",
-		top : degreeLabelTop,
-		width : 150,
-		color : 'white',
-		font : { fontSize : 48 },
-		textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
-	}); 
-
-	var needleImage = Ti.UI.createImageView({
-		image : '/images/needle.png'
-	});
-
-	//make the waypoint needle image
-	var wayneedleImage = Ti.UI.createImageView({
-		image : '/images/newwayneedle.png'
-	});
-
+	
 	//add waypoint info view
 	var waypointInfo = Ti.UI.createView({
 		height : waypointBox,
@@ -95,10 +102,10 @@ var makeCompassWindow = function() {
 	
 	waypointInfo.add(wayPointTestLabel); 
 
-	win.add(headLabel);
-	win.add(wayneedleImage);
+	win.add(ui.headLabel);
+	win.add(ui.wayneedleImage);
 	win.add(waypointInfo);
-	win.add(needleImage);
+	win.add(ui.needleImage);
 	
 	return win;
 }
@@ -160,18 +167,52 @@ var makeWaypointsWindow = function () {
 
 
 // make some labels for Mountain View TESTING
-ui.distanceLabel=Ti.UI.createLabel({text:"You are this many miles from MV:", color:'white', top:5});
+ui.distanceLabel = Ti.UI.createLabel({
+	text : "You are this many miles from MV:",
+	color : 'white',
+	top : 5
+});
 // var distvalueLabel=Ti.UI.createLabel({color:'white', top:5});
 // var bearingLabel=Ti.UI.createLabel({text:"Waypoint bearing is degrees", color:'white', top:5});
-ui.bearvalueLabel=Ti.UI.createLabel({color:'white', top:5});
-ui.distvalueLabel = Ti.UI.createLabel({color:'white', top:5});
-ui.bearingLabel = Ti.UI.createLabel({text:"Waypoint bearing is degrees", color:'white', top:5});
+ui.bearvalueLabel = Ti.UI.createLabel({
+	color : 'white',
+	top : 5
+});
+ui.distvalueLabel = Ti.UI.createLabel({
+	color : 'white',
+	top : 5
+});
+ui.bearingLabel = Ti.UI.createLabel({
+	text : "Waypoint bearing is degrees",
+	color : 'white',
+	top : 5
+});
 
 // make some labels for the various data points for current location
-ui.currentLocationLabel=Ti.UI.createLabel({text:"Current Location", left: 5, color:'white', top:5});
-ui.currentLatLabel=Ti.UI.createLabel({text:"Latitude:", left: 10, color:'white', top:5});
-ui.currentLonLabel=Ti.UI.createLabel({text:"Longitude:", left: 10, color:'white', top:5});
-ui.currentAltLabel=Ti.UI.createLabel({text:"Altitude:", left: 10, color:'white', top:5});
+ui.currentLocationLabel = Ti.UI.createLabel({
+	text : "Current Location",
+	left : 5,
+	color : 'white',
+	top : 5
+});
+ui.currentLatLabel = Ti.UI.createLabel({
+	text : "Latitude:",
+	left : 10,
+	color : 'white',
+	top : 5
+});
+ui.currentLonLabel = Ti.UI.createLabel({
+	text : "Longitude:",
+	left : 10,
+	color : 'white',
+	top : 5
+});
+ui.currentAltLabel = Ti.UI.createLabel({
+	text : "Altitude:",
+	left : 10,
+	color : 'white',
+	top : 5
+});
 
 
 var makeLocationWindow = function () {
