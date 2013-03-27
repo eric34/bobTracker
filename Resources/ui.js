@@ -78,6 +78,11 @@ ui.wayneedleImage = Ti.UI.createImageView({
 	image : '/images/newwayneedle.png'
 });
 
+ui.waypointLabel = Ti.UI.createLabel({
+		text : "No active waypoint",
+		color : "black"
+	});
+	
 var makeCompassWindow = function() {
 	
 	
@@ -103,12 +108,8 @@ var makeCompassWindow = function() {
 
 	});
 
-	var wayPointTestLabel = Ti.UI.createLabel({
-		text : "No active waypoint",
-		color : "black"
-	});
 	
-	waypointInfo.add(wayPointTestLabel); 
+	waypointInfo.add(ui.waypointLabel); 
 
 	win.add(ui.headLabel);
 	win.add(ui.wayneedleImage);
@@ -155,6 +156,7 @@ var makeWaypointsWindow = function () {
 	var myTestText = Ti.UI.createLabel({text:"Default waypoints",color:'white',left: 10, top:15,width:Ti.UI.SIZE,font : { fontSize: 18, fontWeight:'bold'}});
 	headerView.add(myTestText);
 	
+	// If I can implment the "add waypoint" feature, I'll make another table section called  "user waypoints" or similar'
 	
 	var tableViewOptions = {
 		data : data,
@@ -168,6 +170,22 @@ var makeWaypointsWindow = function () {
 	}; 
 	
 	var tableview = Titanium.UI.createTableView(tableViewOptions);
+	
+	// Add the event Listener to set the active waypoint
+	tableview.addEventListener('click', function(e) {
+			activeWaypoint = true; 
+			activeName = e.rowData.title;
+			activeLat = e.rowData.wayLatitude;
+			activeLon = e.rowData.wayLongitude;
+			
+			// Need to set these once the math part can be called as function
+			//activeDist = 0;
+			//activeBearing = 0;
+			ui.waypointLabel.color = 'white';
+			ui.waypointLabel.text = activeName+"  Latitude: "+ activeLat+"  Longitude: "+activeLon+ " Bearing: "+activeBearing+" Distance: "+activeDist;
+	});
+	
+	
 	win.add(tableview);
 	
 	return win;
@@ -217,15 +235,17 @@ ui.currentLonLabel = Ti.UI.createLabel({
 });
 ui.currentAltLabel = Ti.UI.createLabel({
 	text : "Altitude:",
-	left : 10,
-	color : 'white',
-	top : 5
+	color : 'white'
 });
 ui.currentSpeedLabel = Ti.UI.createLabel({
 	text : "Speed:",
-	left : 10,
-	color : 'white',
-	top : 5
+	left: 50,
+	color : 'white'
+});
+ui.currentGPSHeadLabel = Ti.UI.createLabel({
+	text : "Moving:",
+	left : 50,
+	color : 'white'
 });
 
 var makeLocationWindow = function () {
@@ -256,6 +276,14 @@ var makeLocationWindow = function () {
 	
 	});
 	
+	// make another view to hold the bottom row of data for current location
+	var currentLocationOtherView = Ti.UI.createView({
+		layout: 'horizontal',
+		top:3,
+		left:10
+	
+	});
+	
 	// make the active waypoint view
 	var activeWaypointView = Ti.UI.createView({
 		borderRadius : 10,
@@ -280,8 +308,12 @@ var makeLocationWindow = function () {
 	currentLocationView.add(ui.currentLocationLabel);
 	currentLocationView.add(ui.currentLatLabel);
 	currentLocationView.add(ui.currentLonLabel);
-	currentLocationView.add(ui.currentAltLabel);
-	currentLocationView.add(ui.currentSpeedLabel);
+	
+	// bottom row 
+	currentLocationOtherView.add(ui.currentAltLabel);
+	currentLocationOtherView.add(ui.currentSpeedLabel);
+	currentLocationOtherView.add(ui.currentGPSHeadLabel);
+	currentLocationView.add(currentLocationOtherView);
 	
 	// add some labels for the pull out section
 	pulloutWaypointView.add(ui.distanceLabel);
