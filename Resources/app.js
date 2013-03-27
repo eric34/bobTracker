@@ -17,6 +17,15 @@ Ti.Geolocation.purpose = "GPS Location Finding";
 // This sets the compass update to happen every 1 degree of rotation
 Titanium.Geolocation.headingFilter = 1;
 
+// Now we make the active waypoint. Cooler to make this an object, but I do not know how. :)
+var activeWaypoint = false;  // THis should be set by a property to persist
+var activeName = 0;
+var activeLat = 0;
+var activeLon = 0;
+var activeDist = 0;
+var activeBearing = 0;
+
+
 //track where I think the main needle should be
 var needleNow = 0;
 var needleGoto = 0;
@@ -74,7 +83,7 @@ var compassHandler = function(e) {
 		ui.headLabel.text = " " + heading + "°";
 
 		// handle the waypoint needle
-		var bearing = 270;
+		var bearing = activeBearing;
 		// set a bearing for testing
 
 		// if the heading is greater than the bearing, we must set where the needle needs to go differently
@@ -132,6 +141,10 @@ var accuracy = 0;
 var speed = 0;
 var timestamp = 0;
 var altitudeAccuracy = 0;
+var lat1 = 0;
+var lon1 = 0;
+var lat2 = 0;
+var lon2 = 0;
 
 // this currently fires only once, but should be replaced with the fully functional geo.js file
 Titanium.Geolocation.getCurrentPosition(function(e) {
@@ -169,13 +182,16 @@ Titanium.Geolocation.getCurrentPosition(function(e) {
 	///////////////////////////////////////////
 	////    BEGIN THE MATH!!!!!        ///////
 	//////////////////////////////////////////
-	var lat1 = latitude;
-	var lon1 = longitude;
+	lat1 = latitude;
+	lon1 = longitude;
+	
+	lat2 = activeLat;
+	lon2 = activeLon;
+	
 	//var lat1=37.288300;
 	//var lon1=-122.89200;
-
-	var lat2 = 37.337681;
-	var lon2 = -122.038193;
+	//var lat2 = 37.337681;
+	//var lon2 = -122.038193;
 
 	Number.prototype.toRad = function() {
 		return this * Math.PI / 180;
@@ -204,7 +220,8 @@ Titanium.Geolocation.getCurrentPosition(function(e) {
 	var x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
 	var brng = Math.atan2(y, x).toDeg();
 	var bearing = Math.round(((brng + 360) % 360));
-
+	activeBearing = bearing;
+	activeDist = miles;
 	// distvalueLabel.text = (miles);
 	// bearvalueLabel.text = (bearing);
 	// This will be an example of using the ui element in another file
