@@ -5,15 +5,26 @@ module.exports = geo;
 var longitude = 0;
 var latitude = 0;
 var altitude = 0;
-var heading = 0;
+var gpsHeading = 0; // this is the direction the device is actual moving
 var accuracy = 0;
 var speed = 0;
 var timestamp = 0;
 var altitudeAccuracy = 0;
 var magneticHeading = 0;
-var trueHeading = 0;
+var trueHeading = 0; 
 // adding this one to contain the state of the user's chosen info, "mag" for magnetic or "true" for true heading. I think all the math done for calculating distance is true'
 var headingPref = 'mag';
+var compHeading = 0;  // this will store the heading to use for the user to see, either the magnetic or true heading based on their choice
+
+// Now we make the active waypoint. Cooler to make this an object, but I do not know how. :)
+var activeWaypoint = false;  // THis should be set by a property to persist
+var activeName = 0;
+var activeLat = 0;
+var activeLon = 0;
+var activeDist = 0;
+var activeBearing = 0;
+
+
 
 Ti.Geolocation.preferredProvider = "gps";
 
@@ -101,7 +112,8 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 		//
 		Ti.Geolocation.getCurrentHeading(function(e) {
 			if (e.error) {
-				currentHeading.text = 'error: ' + e.error;
+				// I don't have this text object
+				//currentHeading.text = 'error: ' + e.error;
 				Ti.API.info("Code translation: " + translateErrorCode(e.code));
 				return;
 			}
@@ -113,13 +125,13 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 
 			// set the labels - if the user wants magnetic, use magnetic
 			if (headingPref === 'mag') {
-				heading = Math.round(magneticHeading);
+				compHeading = Math.round(magneticHeading);
 			} else {
 				// or they want true
-				heading = Math.round(trueHeading);
+				compHeading = Math.round(trueHeading);
 			}
-
-			ui.headLabel.text = " " + heading + "°";
+		
+			ui.headLabel.text = " " + compHeading + "°";
 
 			Titanium.API.info('geo - current heading: ' + new Date(timestamp));
 		});
@@ -129,7 +141,8 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 		//
 		var headingCallback = function(e) {
 			if (e.error) {
-				updatedHeading.text = 'error: ' + e.error;
+				// I don't have this text object
+				//updatedHeading.text = 'error: ' + e.error;
 				Ti.API.info("Code translation: " + translateErrorCode(e.code));
 				return;
 			}
@@ -142,13 +155,13 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 			// Eric's addition is here: maybe combine this and the one-shot function above to be one label-update mechanism
 			// set the labels - if the user wants magnetic, use magnetic
 			if (headingPref === 'mag') {
-				heading = Math.round(magneticHeading);
+				compHeading = Math.round(magneticHeading);
 			} else {
 				// or they want true
-				heading = Math.round(trueHeading);
+				compHeading = Math.round(trueHeading);
 			}
 
-			ui.headLabel.text = " " + heading + "°";
+			ui.headLabel.text = " " + compHeading + "°";
 
 			Titanium.API.info('geo - heading updated: ' + new Date(timestamp));
 		};
@@ -192,7 +205,7 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 			longitude = e.coords.longitude;
 			latitude = e.coords.latitude;
 			altitude = e.coords.altitude;
-			heading = e.coords.heading;
+			gpsHeading = e.coords.heading;
 			accuracy = e.coords.accuracy;
 			speed = e.coords.speed;
 			timestamp = e.coords.timestamp;
@@ -204,7 +217,9 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 			ui.currentLonLabel.text = ("Longitude: " + longitude);
 			ui.currentAltLabel.text = ("Altitude: " + altitude);
 			ui.currentSpeedLabel.text = ("Speed: " + speed);
-
+			ui.currentGPSHeadLabel.text = ("Moving: " + gpsHeading);
+			
+			
 			Titanium.API.info('geo - current location: ' + new Date(timestamp) + ' long ' + longitude + ' lat ' + latitude + ' accuracy ' + accuracy);
 		});
 	});
@@ -213,7 +228,7 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 	// EVENT LISTENER FOR GEO EVENTS - THIS WILL FIRE REPEATEDLY (BASED ON DISTANCE FILTER)
 	//
 	var locationCallback = function(e) {
-		//Mobileweb seems to be not firing window event for some odd reason.
+		
 		//Forcing a window open and focus event.
 		if (win.openedflag == 0) {
 			Ti.API.info('firing open event');
@@ -235,11 +250,20 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 		longitude = e.coords.longitude;
 		latitude = e.coords.latitude;
 		altitude = e.coords.altitude;
-		heading = e.coords.heading;
+		gpsHeading = e.coords.heading;
 		accuracy = e.coords.accuracy;
 		speed = e.coords.speed;
 		timestamp = e.coords.timestamp;
 		altitudeAccuracy = e.coords.altitudeAccuracy;
+		
+		// set the info in the location screen
+		ui.currentLatLabel.text = ("Latitude: " + latitude);
+		ui.currentLonLabel.text = ("Longitude: " + longitude);
+		ui.currentAltLabel.text = ("Altitude: " + altitude);
+		ui.currentSpeedLabel.text = ("Speed: " + speed);
+		ui.currentGPSHeadLabel.text = ("Moving: " + gpsHeading);
+			
+			
 
 		Titanium.API.info('geo - location updated: ' + new Date(timestamp) + ' long ' + longitude + ' lat ' + latitude + ' accuracy ' + accuracy);
 	};
@@ -261,6 +285,7 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
  * }
  * 
  */
+
 win.addEventListener('focus', function() {
 	win.focusedflag = 1;
 	Ti.API.info("focus event received");
