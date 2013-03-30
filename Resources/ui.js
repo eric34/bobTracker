@@ -1,4 +1,4 @@
-var ui={};
+var ui = {};
 module.exports = ui;
 
 // making compassWindow, waypointsWindow, and locationWindow available to other files
@@ -9,47 +9,46 @@ ui.waypointsWindow = undefined;
 ui.locationWindow = undefined;
 ui.makeApplicationTabgroup = function() {
 	var self = Ti.UI.createTabGroup();
-	
+
 	ui.compassWindow = makeCompassWindow();
 	ui.waypointsWindow = makeWaypointsWindow();
 	ui.locationWindow = makeLocationWindow();
-	
+
 	var compassTab = Ti.UI.createTab({
-		title: "Compass",
-		icon: 'compass.png',
-		window: ui.compassWindow
+		title : "Compass",
+		icon : 'compass.png',
+		window : ui.compassWindow
 	});
-	
+
 	var waypointsTab = Ti.UI.createTab({
-		title: "Waypoints",
-		icon: 'waypoint.png',
-		window: ui.waypointsWindow
+		title : "Waypoints",
+		icon : 'waypoint.png',
+		window : ui.waypointsWindow
 	});
 
 	var locationTab = Ti.UI.createTab({
-		title: "Location",
-		icon: 'location.png',
-		window: ui.locationWindow
+		title : "Location",
+		icon : 'location.png',
+		window : ui.locationWindow
 	});
 
 	self.addTab(compassTab);
 	self.addTab(waypointsTab);
 	self.addTab(locationTab);
-		
+
 	return self;
 }
-
 // Some of the object functions below (e.g. var makeCompassWindow) don't need be in the ui namespace
 // They'll only be used by makeApplicationTabgroup
 
-// ###################################################################### 
+// ######################################################################
 // The following variables are being used by ui.headLabel and makeCompassWindow()
 
 // Assume iPhone 4 and set some stuff
 var backgroundImage = '/images/newCompass@2x.png';
 var degreeLabelTop = 10;
 var waypointBox = 75;
-var waypointboxmargin=5;
+var waypointboxmargin = 5;
 
 // check for iPhone 5, and set stuff if so
 if (Titanium.Platform.displayCaps.platformHeight === 568) {
@@ -66,7 +65,9 @@ ui.headLabel = Ti.UI.createLabel({
 	top : degreeLabelTop,
 	width : 150,
 	color : 'white',
-	font : { fontSize : 48 },
+	font : {
+		fontSize : 48
+	},
 	textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
 });
 
@@ -79,21 +80,20 @@ ui.wayneedleImage = Ti.UI.createImageView({
 });
 
 ui.waypointLabel = Ti.UI.createLabel({
-		text : "No active waypoint",
-		color : "black"
-	});
-	
-var makeCompassWindow = function() {
-	
-	
-	var win = Titanium.UI.createWindow({  
-	    title:'Compass',
-	    backgroundColor:'#fff',
-	    backgroundImage:backgroundImage,
-	    barColor:'#18223c'
-	});	
+	text : "No active waypoint",
+	color : "black"
+});
 
-	
+var makeCompassWindow = function() {
+
+	var win = Titanium.UI.createWindow({
+		title : 'Compass',
+		backgroundColor : '#fff',
+		backgroundImage : backgroundImage,
+		barColor : '#18223c',
+		openedFlag : 0
+	});
+
 	//add waypoint info view
 	var waypointInfo = Ti.UI.createView({
 		height : waypointBox,
@@ -108,19 +108,17 @@ var makeCompassWindow = function() {
 
 	});
 
-	
-	waypointInfo.add(ui.waypointLabel); 
+	waypointInfo.add(ui.waypointLabel);
 
 	win.add(ui.headLabel);
 	win.add(ui.wayneedleImage);
 	win.add(waypointInfo);
 	win.add(ui.needleImage);
-	
+
 	return win;
 }
+var makeWaypointsWindow = function() {
 
-var makeWaypointsWindow = function () {
-	
 	var addButton = Ti.UI.createButton({
 		title : "Add"
 	});
@@ -128,36 +126,168 @@ var makeWaypointsWindow = function () {
 		title : 'Waypoints',
 		backgroundColor : '#fff',
 		rightNavButton : addButton,
-		barColor:'#18223c'
-	}); 
-	
+		barColor : '#18223c'
+	});
+
 	// create table view data object
 	// move this to PositionData.js ???
-	var data = [
-		{title:'Pegati Lake Outlet', wayLatitude:59.8793306, wayLongitude:-160.1266278, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
-		{title:'Paiyun Creek', wayLatitude:59.8914972, wayLongitude:-160.3706333, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
-		{title:'Kanuktik Creek', wayLatitude:59.8737222, wayLongitude:-160.4757, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
-		{title:'Nakgil Creek', wayLatitude:59.854, wayLongitude:-160.6997417, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
-		{title:'Sam Creek', wayLatitude:59.79305, wayLongitude:-160.7500778, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
-		{title:'Klak Creek', wayLatitude:59.7805111, wayLongitude:-160.7705944, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
-		{title:'Nukluk Creek', wayLatitude:59.7248556, wayLongitude:-160.9935833, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
-		{title:'Kanektok Weir', wayLatitude:59.7672306, wayLongitude:-161.0606194, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
-		{title:'Duncan Bros. Upper Camp', wayLatitude:59.8197056, wayLongitude:-161.3057944, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
-		{title:'Duncan Bros. Lower Camp', wayLatitude:59.8076583, wayLongitude:-161.5480722, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
-		{title:'Togiak Refuge Border', wayLatitude:59.8043667, wayLongitude:-161.5887778, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
-		{title:'Alaska West Camp', wayLatitude:59.7794167, wayLongitude:-161.7716167, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
-		{title:'Pull Out', wayLatitude:59.7565583, wayLongitude:-161.8846028, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
-		{title:'On the corner', wayLatitude:37.337681, wayLongitude:-122.038193, hasChild:true, color:'#000', font:{fontWeight : 'bold'}},
-		{title:'Mountain View', wayLatitude:37.337681, wayLongitude:-122.038193, hasChild:true, color:'#000', font:{fontWeight : 'bold'}}
-	];
-	
+	var data = [{
+		title : 'Pegati Lake Outlet',
+		wayLatitude : 59.8793306,
+		wayLongitude : -160.1266278,
+		hasChild : true,
+		color : '#000',
+		font : {
+			fontWeight : 'bold'
+		}
+	}, {
+		title : 'Paiyun Creek',
+		wayLatitude : 59.8914972,
+		wayLongitude : -160.3706333,
+		hasChild : true,
+		color : '#000',
+		font : {
+			fontWeight : 'bold'
+		}
+	}, {
+		title : 'Kanuktik Creek',
+		wayLatitude : 59.8737222,
+		wayLongitude : -160.4757,
+		hasChild : true,
+		color : '#000',
+		font : {
+			fontWeight : 'bold'
+		}
+	}, {
+		title : 'Nakgil Creek',
+		wayLatitude : 59.854,
+		wayLongitude : -160.6997417,
+		hasChild : true,
+		color : '#000',
+		font : {
+			fontWeight : 'bold'
+		}
+	}, {
+		title : 'Sam Creek',
+		wayLatitude : 59.79305,
+		wayLongitude : -160.7500778,
+		hasChild : true,
+		color : '#000',
+		font : {
+			fontWeight : 'bold'
+		}
+	}, {
+		title : 'Klak Creek',
+		wayLatitude : 59.7805111,
+		wayLongitude : -160.7705944,
+		hasChild : true,
+		color : '#000',
+		font : {
+			fontWeight : 'bold'
+		}
+	}, {
+		title : 'Nukluk Creek',
+		wayLatitude : 59.7248556,
+		wayLongitude : -160.9935833,
+		hasChild : true,
+		color : '#000',
+		font : {
+			fontWeight : 'bold'
+		}
+	}, {
+		title : 'Kanektok Weir',
+		wayLatitude : 59.7672306,
+		wayLongitude : -161.0606194,
+		hasChild : true,
+		color : '#000',
+		font : {
+			fontWeight : 'bold'
+		}
+	}, {
+		title : 'Duncan Bros. Upper Camp',
+		wayLatitude : 59.8197056,
+		wayLongitude : -161.3057944,
+		hasChild : true,
+		color : '#000',
+		font : {
+			fontWeight : 'bold'
+		}
+	}, {
+		title : 'Duncan Bros. Lower Camp',
+		wayLatitude : 59.8076583,
+		wayLongitude : -161.5480722,
+		hasChild : true,
+		color : '#000',
+		font : {
+			fontWeight : 'bold'
+		}
+	}, {
+		title : 'Togiak Refuge Border',
+		wayLatitude : 59.8043667,
+		wayLongitude : -161.5887778,
+		hasChild : true,
+		color : '#000',
+		font : {
+			fontWeight : 'bold'
+		}
+	}, {
+		title : 'Alaska West Camp',
+		wayLatitude : 59.7794167,
+		wayLongitude : -161.7716167,
+		hasChild : true,
+		color : '#000',
+		font : {
+			fontWeight : 'bold'
+		}
+	}, {
+		title : 'Pull Out',
+		wayLatitude : 59.7565583,
+		wayLongitude : -161.8846028,
+		hasChild : true,
+		color : '#000',
+		font : {
+			fontWeight : 'bold'
+		}
+	}, {
+		title : 'On the corner',
+		wayLatitude : 37.337681,
+		wayLongitude : -122.038193,
+		hasChild : true,
+		color : '#000',
+		font : {
+			fontWeight : 'bold'
+		}
+	}, {
+		title : 'Mountain View',
+		wayLatitude : 37.337681,
+		wayLongitude : -122.038193,
+		hasChild : true,
+		color : '#000',
+		font : {
+			fontWeight : 'bold'
+		}
+	}];
+
 	// make a header view for the sction - this one is "default waypoints"
-	var headerView = Ti.UI.createView({height:Ti.UI.SIZE,width:Ti.UI.SIZE});
-	var myTestText = Ti.UI.createLabel({text:"Default waypoints",color:'white',left: 10, top:15,width:Ti.UI.SIZE,font : { fontSize: 18, fontWeight:'bold'}});
+	var headerView = Ti.UI.createView({
+		height : Ti.UI.SIZE,
+		width : Ti.UI.SIZE
+	});
+	var myTestText = Ti.UI.createLabel({
+		text : "Default waypoints",
+		color : 'white',
+		left : 10,
+		top : 15,
+		width : Ti.UI.SIZE,
+		font : {
+			fontSize : 18,
+			fontWeight : 'bold'
+		}
+	});
 	headerView.add(myTestText);
-	
+
 	// If I can implment the "add waypoint" feature, I'll make another table section called  "user waypoints" or similar'
-	
+
 	var tableViewOptions = {
 		data : data,
 		headerView : headerView,
@@ -167,31 +297,28 @@ var makeWaypointsWindow = function () {
 		backgroundColor : '#262e2f',
 		rowBackgroundColor : 'white',
 		style : Titanium.UI.iPhone.TableViewStyle.GROUPED
-	}; 
-	
+	};
+
 	var tableview = Titanium.UI.createTableView(tableViewOptions);
-	
+
 	// Add the event Listener to set the active waypoint
 	tableview.addEventListener('click', function(e) {
-			activeWaypoint = true; 
-			activeName = e.rowData.title;
-			activeLat = e.rowData.wayLatitude;
-			activeLon = e.rowData.wayLongitude;
-			
-			// Need to set these once the math part can be called as function
-			//activeDist = 0;
-			//activeBearing = 0;
-			ui.waypointLabel.color = 'white';
-			ui.waypointLabel.text = activeName+"  Latitude: "+ activeLat+"  Longitude: "+activeLon+ " Bearing: "+activeBearing+" Distance: "+activeDist;
+		activeWaypoint = true;
+		activeName = e.rowData.title;
+		activeLat = e.rowData.wayLatitude;
+		activeLon = e.rowData.wayLongitude;
+
+		// Need to set these once the math part can be called as function
+		//activeDist = 0;
+		//activeBearing = 0;
+		ui.waypointLabel.color = 'white';
+		ui.waypointLabel.text = activeName + "  Latitude: " + activeLat + "  Longitude: " + activeLon + " Bearing: " + activeBearing + " Distance: " + activeDist;
 	});
-	
-	
+
 	win.add(tableview);
-	
+
 	return win;
 }
-
-
 // make some labels for Mountain View TESTING
 ui.distanceLabel = Ti.UI.createLabel({
 	text : "You are this many miles from MV:",
@@ -239,7 +366,7 @@ ui.currentAltLabel = Ti.UI.createLabel({
 });
 ui.currentSpeedLabel = Ti.UI.createLabel({
 	text : "Speed:",
-	left: 50,
+	left : 50,
 	color : 'white'
 });
 ui.currentGPSHeadLabel = Ti.UI.createLabel({
@@ -248,73 +375,78 @@ ui.currentGPSHeadLabel = Ti.UI.createLabel({
 	color : 'white'
 });
 
-var makeLocationWindow = function () {
-	
+var makeLocationWindow = function() {
+
 	var win = Titanium.UI.createWindow({
 		title : 'Location',
 		layout : 'vertical',
 		backgroundColor : '#262e2f',
-		barColor:'#18223c'
-	}); 
-	
+		barColor : '#18223c'
+	});
+
 	// make some labels for Mountain View TESTING
-	var distanceLabel=Ti.UI.createLabel({text:"You are this many miles from MV:", color:'white', top:5});
+	var distanceLabel = Ti.UI.createLabel({
+		text : "You are this many miles from MV:",
+		color : 'white',
+		top : 5
+	});
 	// var distvalueLabel=Ti.UI.createLabel({color:'white', top:5});
 	// var bearingLabel=Ti.UI.createLabel({text:"Waypoint bearing is degrees", color:'white', top:5});
-	var bearvalueLabel=Ti.UI.createLabel({color:'white', top:5});
-	
+	var bearvalueLabel = Ti.UI.createLabel({
+		color : 'white',
+		top : 5
+	});
 
-	
 	// make the current location view
 	var currentLocationView = Ti.UI.createView({
 		borderRadius : 10,
 		borderColor : 'black',
-		layout: 'vertical',
+		layout : 'vertical',
 		borderWidth : 3,
-		top:3,
-		height: '33%'
-	
+		top : 3,
+		height : '33%'
+
 	});
-	
+
 	// make another view to hold the bottom row of data for current location
 	var currentLocationOtherView = Ti.UI.createView({
-		layout: 'horizontal',
-		top:3,
-		left:10
-	
+		layout : 'horizontal',
+		top : 3,
+		left : 10
+
 	});
-	
+
 	// make the active waypoint view
 	var activeWaypointView = Ti.UI.createView({
 		borderRadius : 10,
 		borderColor : 'black',
-		layout: 'vertical',
+		layout : 'vertical',
 		borderWidth : 3,
-		height: '33%'
-	
+		height : '33%'
+
 	});
-	
+
 	// make the pull out waypoint view
 	var pulloutWaypointView = Ti.UI.createView({
 		borderRadius : 10,
 		borderColor : 'black',
-		layout: 'vertical',
+		layout : 'vertical',
 		borderWidth : 3,
-		height: '33%'
-	
+		height : '33%'
+
 	});
-	
+
 	// add the current location labels
 	currentLocationView.add(ui.currentLocationLabel);
 	currentLocationView.add(ui.currentLatLabel);
 	currentLocationView.add(ui.currentLonLabel);
-	
-	// bottom row 
+
+	// bottom row
 	currentLocationOtherView.add(ui.currentAltLabel);
 	currentLocationOtherView.add(ui.currentSpeedLabel);
 	currentLocationOtherView.add(ui.currentGPSHeadLabel);
 	currentLocationView.add(currentLocationOtherView);
-	
+
 	// add some labels for the pull out section
 	pulloutWaypointView.add(ui.distanceLabel);
 	// pulloutWaypointView.add(distvalueLabel);
@@ -322,13 +454,11 @@ var makeLocationWindow = function () {
 	pulloutWaypointView.add(ui.distvalueLabel);
 	pulloutWaypointView.add(ui.bearingLabel);
 	pulloutWaypointView.add(ui.bearvalueLabel);
-	
-	
+
 	//add the info views
 	win.add(currentLocationView);
 	win.add(activeWaypointView);
 	win.add(pulloutWaypointView);
 
-	
 	return win;
 }
