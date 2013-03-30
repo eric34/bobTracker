@@ -17,7 +17,7 @@ var headingPref = 'mag';
 var compHeading = 0;  // this will store the heading to use for the user to see, either the magnetic or true heading based on their choice
 
 // Now we make the active waypoint. Cooler to make this an object, but I do not know how. :)
-var activeWaypoint = false;  // THis should be set by a property to persist
+var activeWaypoint = false;  // This should be set by a property to persist
 var activeName = 0;
 var activeLat = 0;
 var activeLon = 0;
@@ -27,14 +27,10 @@ var activeBearing = 0;
 
 
 Ti.Geolocation.preferredProvider = "gps";
+Ti.Geolocation.purpose = "Teppy TrekTracker";
 
-if (isIPhone3_2_Plus()) {
-	//NOTE: starting in 3.2+, you'll need to set the applications
-	//purpose property for using Location services on iPhone
-	Ti.Geolocation.purpose = "Teppy TrekTracker";
-}
 
-function translateErrorCode(code) {
+geo.translateErrorCode = function(code) {
 	if (code == null) {
 		return null;
 	}
@@ -114,7 +110,7 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 			if (e.error) {
 				// I don't have this text object
 				//currentHeading.text = 'error: ' + e.error;
-				Ti.API.info("Code translation: " + translateErrorCode(e.code));
+				Ti.API.info("Code translation: " + geo.translateErrorCode(e.code));
 				return;
 			}
 
@@ -133,7 +129,7 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 		
 			ui.headLabel.text = " " + compHeading + "°";
 
-			Titanium.API.info('geo - current heading: ' + new Date(timestamp));
+			//Titanium.API.info('geo - current heading: ' + new Date(timestamp));
 		});
 
 		//
@@ -143,7 +139,7 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 			if (e.error) {
 				// I don't have this text object
 				//updatedHeading.text = 'error: ' + e.error;
-				Ti.API.info("Code translation: " + translateErrorCode(e.code));
+				Ti.API.info("Code translation: " + geo.translateErrorCode(e.code));
 				return;
 			}
 
@@ -163,7 +159,7 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 
 			ui.headLabel.text = " " + compHeading + "°";
 
-			Titanium.API.info('geo - heading updated: ' + new Date(timestamp));
+			//Titanium.API.info('geo - heading updated: ' + new Date(timestamp));
 		};
 		Titanium.Geolocation.addEventListener('heading', headingCallback);
 		headingAdded = true;
@@ -271,6 +267,57 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 	locationAdded = true;
 
 }
+
+
+
+////////   ------------>>>   Here I will try to make the math into a function
+
+
+// first the prototypes.
+Number.prototype.toRad = function() {
+	return this * Math.PI / 180;
+}
+
+Number.prototype.toDeg = function() {
+	return this * 180 / Math.PI;
+}
+
+
+///   now the distance formula
+geo.distanceCheck = function(lat1, lon1, lat2, lon2) {
+	var R = 6371;
+	// km
+	var dLat = (lat2 - lat1).toRad();
+	Ti.API.info
+	var dLon = (lon2 - lon1).toRad();
+	var lat1 = lat1.toRad();
+	var lat2 = lat2.toRad();
+
+	var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+	var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	var d = R * c;
+	var miles = Math.round((d / 1.6) * 10) / 10;
+	Ti.API.info("Miles is: " + miles);
+
+	return miles;
+
+}
+
+// and the bearing formula
+geo.bearingCheck = function(lat1, lon1, lat2, lon2) {
+	// calculate the bearing
+	var dLon = (lon2 - lon1).toRad();
+	var y = Math.sin(dLon) * Math.cos(lat2);
+	var x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+	var brng = Math.atan2(y, x).toDeg();
+	var bearing = Math.round(((brng + 360) % 360));
+	
+	return bearing;
+}
+
+
+
+
 
 // ---------------------- > from here I have to make these callable functions from the windows themselves.
 // the variables used as window properties for these is:
