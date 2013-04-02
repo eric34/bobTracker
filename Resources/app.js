@@ -10,6 +10,10 @@ mainTabGroup.open();
 // this is almost ready to go:
 var geo = require('geo');
 
+if(geo.isEnabled()) {
+	geo.checkCompass();
+}
+
 // This sets the compass update to happen every 1 degree of rotation
 //Titanium.Geolocation.headingFilter = 1;
 
