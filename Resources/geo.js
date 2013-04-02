@@ -27,7 +27,6 @@ var activeLon = 0;
 var activeDist = 0;
 var activeBearing = 0;
 
-Ti.Geolocation.preferredProvider = "gps";
 Ti.Geolocation.purpose = "Teppy TrekTracker";
 
 geo.translateErrorCode = function(code) {
@@ -50,10 +49,12 @@ geo.translateErrorCode = function(code) {
 		case Ti.Geolocation.ERROR_REGION_MONITORING_DELAYED:
 			return "Region monitoring setup delayed";
 	}
-}
+};
 // state vars used by resume/pause
 var headingAdded = false;
 var locationAdded = false;
+
+ge
 
 //
 //  SHOW CUSTOM ALERT IF DEVICE HAS GEO TURNED OFF
