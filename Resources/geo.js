@@ -27,7 +27,10 @@ var activeLon = 0;
 var activeDist = 0;
 var activeBearing = 0;
 
-Ti.Geolocation.preferredProvider = "gps";
+// state vars used by resume/pause
+var headingAdded = false;
+var locationAdded = false;
+
 Ti.Geolocation.purpose = "Teppy TrekTracker";
 
 geo.translateErrorCode = function(code) {
@@ -50,50 +53,50 @@ geo.translateErrorCode = function(code) {
 		case Ti.Geolocation.ERROR_REGION_MONITORING_DELAYED:
 			return "Region monitoring setup delayed";
 	}
-}
-// state vars used by resume/pause
-var headingAdded = false;
-var locationAdded = false;
+};
 
 //
 //  SHOW CUSTOM ALERT IF DEVICE HAS GEO TURNED OFF
 //
-if (Titanium.Geolocation.locationServicesEnabled === false) {
-	Titanium.UI.createAlertDialog({
-		title : 'Teppy Trek',
-		message : 'Your device has geo turned off - turn it on.'
-	}).show();
-} else {
-	if (Titanium.Platform.name != 'android') {
-
-		// commenting this out. First referred to "win" and I updated that, but at this point the windows are undefined.
-		// if (ui.compassWindow.openedflag == 0) {
-		// Ti.API.info('firing open event');
-		// win.fireEvent('open');
-		// }
-		// if (ui.compassWindow.focusedflag == 0) {
-		// Ti.API.info('firing focus event');
-		// win.fireEvent('focus');
-		// }
-		var authorization = Titanium.Geolocation.locationServicesAuthorization;
-		Ti.API.info('Authorization: ' + authorization);
-		if (authorization == Titanium.Geolocation.AUTHORIZATION_DENIED) {
-			Ti.UI.createAlertDialog({
-				title : 'Teppy Trek',
-				message : 'You have disallowed Teppy Trek from running geolocation services.'
-			}).show();
-		} else if (authorization == Titanium.Geolocation.AUTHORIZATION_RESTRICTED) {
-			Ti.UI.createAlertDialog({
-				title : 'Teppy Trek',
-				message : 'Your system has disallowed Teppy Trek from running geolocation services.'
-			}).show();
+geo.isEnabled = function() {
+	var message = '';
+	var locationEnabled = true;
+	
+	if (!Titanium.Geolocation.locationServicesEnabled) {
+		message = 'Your device has geo turned off - turn it on.';
+	}
+	else {
+		
+		switch (Titanium.Geolocation.locationServicesAuthorization) {
+			
+		case Titanium.Geolocation.AUTHORIZATION_DENIED:
+			message = 'You have disallowed Teppy Trek from running geolocation services.';
+			break;
+		case Titanium.Geolocation.AUTHORIZATION_RESTRICTED:
+			message = 'Your system has disallowed Teppy Trek from running geolocation services.';
+			break;
+			
 		}
 	}
+	
+	if (message.length !== 0) {
+		Titanium.UI.createAlertDialog({
+		title : 'Teppy Trek',
+		message : message
+		}).show();
+		
+		locationEnabled = false;	
+	}
+	
+	return locationEnabled;
+};
 
-	//
-	// IF WE HAVE COMPASS GET THE HEADING
-	//
+//
+// IF WE HAVE COMPASS, GET THE HEADING
+//
+geo.checkCompass = function() {
 	if (Titanium.Geolocation.hasCompass) {
+		
 		//
 		//  TURN OFF ANNOYING COMPASS INTERFERENCE MESSAGE
 		//
@@ -104,41 +107,10 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 		// EVENT WON'T FIRE UNLESS ANGLE CHANGE EXCEEDS THIS VALUE
 		Titanium.Geolocation.headingFilter = 1;
 
-		//
-		//  GET CURRENT HEADING - THIS FIRES ONCE
-		//
-		Ti.Geolocation.getCurrentHeading(function(e) {
-			if (e.error) {
-				// I don't have this text object
-				//currentHeading.text = 'error: ' + e.error;
-				Ti.API.info("Code translation: " + geo.translateErrorCode(e.code));
-				return;
-			}
-
-			magneticHeading = e.heading.magneticHeading;
-			accuracy = e.heading.accuracy;
-			trueHeading = e.heading.trueHeading;
-			timestamp = e.heading.timestamp;
-
-			// set the labels - if the user wants magnetic, use magnetic
-			if (headingPref === 'mag') {
-				compHeading = Math.round(magneticHeading);
-			} else {
-				// or they want true
-				compHeading = Math.round(trueHeading);
-			}
-
-			ui.headLabel.text = " " + compHeading + "°";
-
-			//Titanium.API.info('geo - current heading: ' + new Date(timestamp));
-		});
-
-		//
-		// EVENT LISTENER FOR COMPASS EVENTS - THIS WILL FIRE REPEATEDLY (BASED ON HEADING FILTER)
-		//
 		var headingCallback = function(e) {
 			if (e.error) {
 				// I don't have this text object
+				// wluu: you can replace this with ui.headLabel
 				//updatedHeading.text = 'error: ' + e.error;
 				Ti.API.info("Code translation: " + geo.translateErrorCode(e.code));
 				return;
@@ -151,6 +123,7 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 
 			// Eric's addition is here: maybe combine this and the one-shot function above to be one label-update mechanism
 			// set the labels - if the user wants magnetic, use magnetic
+			// wluu: might want to use this logic only with getCurrentHeading
 			if (headingPref === 'mag') {
 				compHeading = Math.round(magneticHeading);
 			} else {
@@ -162,11 +135,115 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 
 			//Titanium.API.info('geo - heading updated: ' + new Date(timestamp));
 		};
+
+		//
+		//  GET CURRENT HEADING - THIS FIRES ONCE
+		//
+		Ti.Geolocation.getCurrentHeading(headingCallback);
+
+		//
+		// EVENT LISTENER FOR COMPASS EVENTS - THIS WILL FIRE REPEATEDLY (BASED ON HEADING FILTER)
+		//
 		Titanium.Geolocation.addEventListener('heading', headingCallback);
-		headingAdded = true;
-	} else {
-		Titanium.API.info("No Compass on device");
-	}
+		headingAdded = true; 
+
+	} 
+};
+
+// if (Titanium.Geolocation.locationServicesEnabled === false) {
+	// Titanium.UI.createAlertDialog({
+		// title : 'Teppy Trek',
+		// message : 'Your device has geo turned off - turn it on.'
+	// }).show();
+// } else {
+	//if (Titanium.Platform.name != 'android') {
+
+		// commenting this out. First referred to "win" and I updated that, but at this point the windows are undefined.
+		// if (ui.compassWindow.openedflag == 0) {
+		// Ti.API.info('firing open event');
+		// win.fireEvent('open');
+		// }
+		// if (ui.compassWindow.focusedflag == 0) {
+		// Ti.API.info('firing focus event');
+		// win.fireEvent('focus');
+		// }
+		
+		
+		// var authorization = Titanium.Geolocation.locationServicesAuthorization;
+		// Ti.API.info('Authorization: ' + authorization);
+		// if (authorization == Titanium.Geolocation.AUTHORIZATION_DENIED) {
+			// Ti.UI.createAlertDialog({
+				// title : 'Teppy Trek',
+				// message : 'You have disallowed Teppy Trek from running geolocation services.'
+			// }).show();
+		// } else if (authorization == Titanium.Geolocation.AUTHORIZATION_RESTRICTED) {
+			// Ti.UI.createAlertDialog({
+				// title : 'Teppy Trek',
+				// message : 'Your system has disallowed Teppy Trek from running geolocation services.'
+			// }).show();
+		// }
+	// }
+
+	//
+	// IF WE HAVE COMPASS GET THE HEADING
+	//
+	// if (Titanium.Geolocation.hasCompass) {
+		// //
+		// //  TURN OFF ANNOYING COMPASS INTERFERENCE MESSAGE
+		// //
+		// Titanium.Geolocation.showCalibration = false;
+// 
+		// //
+		// // SET THE HEADING FILTER (THIS IS IN DEGREES OF ANGLE CHANGE)
+		// // EVENT WON'T FIRE UNLESS ANGLE CHANGE EXCEEDS THIS VALUE
+		// Titanium.Geolocation.headingFilter = 1;
+// 		
+		// var headingCallback = function(e) {
+			// if (e.error) {
+				// // I don't have this text object
+				// // wluu: you can replace this with ui.headLabel
+				// //updatedHeading.text = 'error: ' + e.error;
+				// Ti.API.info("Code translation: " + geo.translateErrorCode(e.code));
+				// return;
+			// }
+// 
+			// magneticHeading = e.heading.magneticHeading;
+			// accuracy = e.heading.accuracy;
+			// trueHeading = e.heading.trueHeading;
+			// timestamp = e.heading.timestamp;
+// 
+			// // Eric's addition is here: maybe combine this and the one-shot function above to be one label-update mechanism
+			// // set the labels - if the user wants magnetic, use magnetic
+			// // wluu: might want to use this logic only with getCurrentHeading
+			// if (headingPref === 'mag') {
+				// compHeading = Math.round(magneticHeading);
+			// } else {
+				// // or they want true
+				// compHeading = Math.round(trueHeading);
+			// }
+// 
+			// ui.headLabel.text = " " + compHeading + "°";
+// 
+			// //Titanium.API.info('geo - heading updated: ' + new Date(timestamp));
+		// };
+// 		
+		// //
+		// //  GET CURRENT HEADING - THIS FIRES ONCE
+		// //
+		// Ti.Geolocation.getCurrentHeading(headingCallback);
+// 		
+// 		
+		// //
+		// // EVENT LISTENER FOR COMPASS EVENTS - THIS WILL FIRE REPEATEDLY (BASED ON HEADING FILTER)
+		// //
+		// Titanium.Geolocation.addEventListener('heading', headingCallback);
+		// headingAdded = true;
+	// } else {
+		// Titanium.API.info("No Compass on device");
+	// }
+
+// putting this stuff in a temp function so it won't break the app
+function temp () {
 
 	//
 	//  SET ACCURACY - THE FOLLOWING VALUES ARE SUPPORTED
@@ -243,15 +320,19 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 		// Ti.API.info("Code translation: " + translateErrorCode(e.code));
 		// return;
 		// }
-
-		longitude = e.coords.longitude;
-		latitude = e.coords.latitude;
-		altitude = e.coords.altitude;
-		gpsHeading = e.coords.heading;
-		accuracy = e.coords.accuracy;
-		speed = e.coords.speed;
-		timestamp = e.coords.timestamp;
-		altitudeAccuracy = e.coords.altitudeAccuracy;
+		
+		// a temporary fix to the runtime exception
+		if(e.success) {
+			longitude = e.coords.longitude;
+			latitude = e.coords.latitude;
+			altitude = e.coords.altitude;
+			gpsHeading = e.coords.heading;
+			accuracy = e.coords.accuracy;
+			speed = e.coords.speed;
+			timestamp = e.coords.timestamp;
+			altitudeAccuracy = e.coords.altitudeAccuracy;	
+		}
+		
 
 		// set the info in the location screen
 		ui.currentLatLabel.text = ("Latitude: " + latitude);
@@ -264,6 +345,8 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 	};
 	Titanium.Geolocation.addEventListener('location', locationCallback);
 	locationAdded = true;
+
+// }
 
 }
 
