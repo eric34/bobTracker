@@ -2,11 +2,17 @@
 var ui = require('ui');
 var pd = require('PositionData');
 
+ui.defaultWaypoints = pd.defaultWaypoints();
+
 var mainTabGroup = ui.makeApplicationTabgroup();
 mainTabGroup.open();
 
 // this is almost ready to go:
 var geo = require('geo');
+
+if(geo.isEnabled()) {
+	geo.checkCompass();
+}
 
 // This sets the compass update to happen every 1 degree of rotation
 //Titanium.Geolocation.headingFilter = 1;
