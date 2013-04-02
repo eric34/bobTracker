@@ -2,6 +2,8 @@
 var ui = require('ui');
 var pd = require('PositionData');
 
+ui.defaultWaypoints = pd.defaultWaypoints();
+
 var mainTabGroup = ui.makeApplicationTabgroup();
 mainTabGroup.open();
 

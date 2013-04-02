@@ -243,15 +243,19 @@ if (Titanium.Geolocation.locationServicesEnabled === false) {
 		// Ti.API.info("Code translation: " + translateErrorCode(e.code));
 		// return;
 		// }
-
-		longitude = e.coords.longitude;
-		latitude = e.coords.latitude;
-		altitude = e.coords.altitude;
-		gpsHeading = e.coords.heading;
-		accuracy = e.coords.accuracy;
-		speed = e.coords.speed;
-		timestamp = e.coords.timestamp;
-		altitudeAccuracy = e.coords.altitudeAccuracy;
+		
+		// a temporary fix to the runtime exception
+		if(e.success) {
+			longitude = e.coords.longitude;
+			latitude = e.coords.latitude;
+			altitude = e.coords.altitude;
+			gpsHeading = e.coords.heading;
+			accuracy = e.coords.accuracy;
+			speed = e.coords.speed;
+			timestamp = e.coords.timestamp;
+			altitudeAccuracy = e.coords.altitudeAccuracy;	
+		}
+		
 
 		// set the info in the location screen
 		ui.currentLatLabel.text = ("Latitude: " + latitude);
