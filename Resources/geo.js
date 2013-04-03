@@ -5,27 +5,26 @@ module.exports = geo;
 var longitude = 0;
 var latitude = 0;
 var altitude = 0;
-var gpsHeading = 0;
-// this is the direction the device is actual moving
+var gpsHeading = 0;  // this is the direction the device is actually moving
 var accuracy = 0;
 var speed = 0;
 var timestamp = 0;
 var altitudeAccuracy = 0;
 var magneticHeading = 0;
 var trueHeading = 0;
+
 // adding this one to contain the state of the user's chosen info, "mag" for magnetic or "true" for true heading. I think all the math done for calculating distance is true'
-var headingPref = 'mag';
+geo.headingPref = 'true';
 var compHeading = 0;
 // this will store the heading to use for the user to see, either the magnetic or true heading based on their choice
 
 // Now we make the active waypoint. Cooler to make this an object, but I do not know how. :)
-var activeWaypoint = false;
-// This should be set by a property to persist
-var activeName = 0;
-var activeLat = 0;
-var activeLon = 0;
-var activeDist = 0;
-var activeBearing = 0;
+geo.activeWaypoint = false;  // This should be set by a property to persist
+geo.activeName = 0;
+geo.activeLat = 0;
+geo.activeLon = 0;
+geo.activeDist = 0;
+geo.activeBearing = 0;
 
 // state vars used by resume/pause
 var headingAdded = false;
@@ -109,9 +108,7 @@ geo.checkCompass = function() {
 
 		var headingCallback = function(e) {
 			if (e.error) {
-				// I don't have this text object
-				// wluu: you can replace this with ui.headLabel
-				//updatedHeading.text = 'error: ' + e.error;
+				ui.headLabel.text = 'error: ' + e.error;
 				Ti.API.info("Code translation: " + geo.translateErrorCode(e.code));
 				return;
 			}
@@ -124,7 +121,7 @@ geo.checkCompass = function() {
 			// Eric's addition is here: maybe combine this and the one-shot function above to be one label-update mechanism
 			// set the labels - if the user wants magnetic, use magnetic
 			// wluu: might want to use this logic only with getCurrentHeading
-			if (headingPref === 'mag') {
+			if (geo.headingPref === 'mag') {
 				compHeading = Math.round(magneticHeading);
 			} else {
 				// or they want true
@@ -145,7 +142,7 @@ geo.checkCompass = function() {
 		// EVENT LISTENER FOR COMPASS EVENTS - THIS WILL FIRE REPEATEDLY (BASED ON HEADING FILTER)
 		//
 		Titanium.Geolocation.addEventListener('heading', headingCallback);
-		headingAdded = true; 
+		//headingAdded = true; 
 
 	} 
 };
@@ -215,7 +212,7 @@ geo.checkCompass = function() {
 			// // Eric's addition is here: maybe combine this and the one-shot function above to be one label-update mechanism
 			// // set the labels - if the user wants magnetic, use magnetic
 			// // wluu: might want to use this logic only with getCurrentHeading
-			// if (headingPref === 'mag') {
+			// if (geo.headingPref === 'mag') {
 				// compHeading = Math.round(magneticHeading);
 			// } else {
 				// // or they want true
