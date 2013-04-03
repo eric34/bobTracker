@@ -1,4 +1,5 @@
 // This file is dedicated to only default waypoints. Now, you can add more !!!!
+// How exciting. :)
 
 exports.waypoints = [
 
