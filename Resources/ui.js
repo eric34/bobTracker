@@ -46,7 +46,8 @@ ui.makeApplicationTabgroup = function() {
 
 // Assume iPhone 4 and set some stuff
 var backgroundImage = '/images/newCompass@2x.png';
-var degreeLabelTop = 10;
+var degreeLabelTop = 5;
+var prefLabelTop = 55;
 var waypointBox = 75;
 var waypointboxmargin = 5;
 
@@ -54,7 +55,8 @@ var waypointboxmargin = 5;
 if (Titanium.Platform.displayCaps.platformHeight === 568) {
 	isIphone5 = true;
 	backgroundImage = '/images/newCompass-568h@2x.png';
-	ui.degreeLabelTop = 40;
+	degreeLabelTop = 40;
+	prefLabelTop = 100;
 	waypointBox = 120;
 }
 
@@ -71,6 +73,18 @@ ui.headLabel = Ti.UI.createLabel({
 	textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
 });
 
+ui.prefLabel = Ti.UI.createLabel({
+	text : geo.headingPref,
+	top : prefLabelTop,
+	width : 50,
+	color : '#b8c7d3',
+	font : {
+		fontSize : 18
+	},
+	textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
+});
+
+
 ui.needleImage = Ti.UI.createImageView({
 	image : '/images/needle.png'
 });
@@ -83,6 +97,21 @@ ui.waypointLabel = Ti.UI.createLabel({
 	text : "No active waypoint",
 	color : "black"
 });
+
+// I need to turn on and turn off the waypoint needle and do the other stuff to the labels
+ui.activeWaypoint = function(e) {
+	if (e) {
+		ui.wayneedleImage.show();
+		ui.waypointLabel.color = 'white';
+		geo.activeWaypoint = true;
+	} else {
+		ui.wayneedleImage.hide();
+		ui.waypointLabel.color = 'black';
+		ui.waypointLabel.text = "No active waypoint"
+		geo.activeWaypoint = false;
+	}
+}
+
 
 var makeCompassWindow = function() {
 
@@ -111,12 +140,33 @@ var makeCompassWindow = function() {
 	waypointInfo.add(ui.waypointLabel);
 
 	win.add(ui.headLabel);
+	win.add(ui.prefLabel);
 	win.add(ui.wayneedleImage);
+	
+	ui.wayneedleImage.hide(); // should need to remove later when I can load an active waypoint from a property
+	
 	win.add(waypointInfo);
 	win.add(ui.needleImage);
+	
+
+	// --------------->
+	// test turn off waypoint button
+	var testButton = Ti.UI.createButton({
+		title : "click",
+		top : 0,
+		left : 0
+	});
+	testButton.addEventListener('click', function() {
+		ui.activeWaypoint(false);
+	});
+	win.add(testButton);
+	// ---------------->
 
 	return win;
 }
+
+
+
 
 // this will be loaded with an array of waypoint objects before mainTabGroup opens
 ui.defaultWaypoints = null;
@@ -167,30 +217,33 @@ var makeWaypointsWindow = function() {
 
 	// Add the event Listener to set the active waypoint
 	tableview.addEventListener('click', function(e) {
-		activeWaypoint = true;
-		activeName = e.rowData.title;
-		activeLat = e.rowData.wayLatitude;
-		activeLon = e.rowData.wayLongitude;
+		geo.activeWaypoint = true;
+		geo.activeName = e.rowData.title;
+		geo.activeLat = e.rowData.wayLatitude;
+		geo.activeLon = e.rowData.wayLongitude;
 
 		// Need to set these once the math part can be called as function
 		//activeDist = 0;
 		//activeBearing = 0;
-		ui.waypointLabel.color = 'white';
-		ui.waypointLabel.text = activeName + "  Latitude: " + activeLat + "  Longitude: " + activeLon + " Bearing: " + activeBearing + " Distance: " + activeDist;
+		// ui.waypointLabel.color = 'white';  // i moved this
+		ui.waypointLabel.text = geo.activeName + "  Latitude: " + geo.activeLat + "  Longitude: " + geo.activeLon + " Bearing: " + geo.activeBearing + " Distance: " + geo.activeDist;
+		
+		// Run function to turn on the label and set the color white, also turn on the waypoint needle
+		ui.activeWaypoint(true);	
 	});
 
 	win.add(tableview);
 
 	return win;
 }
+
+/*  Remove this later
 // make some labels for Mountain View TESTING
 ui.distanceLabel = Ti.UI.createLabel({
 	text : "You are this many miles from MV:",
 	color : 'white',
 	top : 5
 });
-// var distvalueLabel=Ti.UI.createLabel({color:'white', top:5});
-// var bearingLabel=Ti.UI.createLabel({text:"Waypoint bearing is degrees", color:'white', top:5});
 ui.bearvalueLabel = Ti.UI.createLabel({
 	color : 'white',
 	top : 5
@@ -204,10 +257,11 @@ ui.bearingLabel = Ti.UI.createLabel({
 	color : 'white',
 	top : 5
 });
+*/
 
 // make some labels for the various data points for current location
 ui.currentLocationLabel = Ti.UI.createLabel({
-	text : "Current Location",
+	text : "Current Location:",
 	left : 5,
 	color : 'white',
 	top : 5
@@ -237,6 +291,18 @@ ui.currentGPSHeadLabel = Ti.UI.createLabel({
 	text : "Moving:",
 	left : 50,
 	color : 'white'
+});
+ui.currentWaypointLabel = Ti.UI.createLabel({
+	text : "Active Waypoint:",
+	left : 5,
+	color : 'white',
+	top : 5
+});
+ui.pulloutWaypointLabel = Ti.UI.createLabel({
+	text : "Pullout Waypoint:",
+	left : 5,
+	color : 'white',
+	top : 5
 });
 
 var makeLocationWindow = function() {
@@ -290,6 +356,7 @@ var makeLocationWindow = function() {
 
 	});
 
+
 	// make the pull out waypoint view
 	var pulloutWaypointView = Ti.UI.createView({
 		borderRadius : 10,
@@ -310,14 +377,22 @@ var makeLocationWindow = function() {
 	currentLocationOtherView.add(ui.currentSpeedLabel);
 	currentLocationOtherView.add(ui.currentGPSHeadLabel);
 	currentLocationView.add(currentLocationOtherView);
+	
+	// add the active waypoint view
+	activeWaypointView.add(ui.currentWaypointLabel);
+	// activeWaypointView.add(ui.waypointLabel); // strange, adding this label from the compass page removed it from the compass page
 
 	// add some labels for the pull out section
+	pulloutWaypointView.add(ui.pulloutWaypointLabel);
+	
+	/* remove this later
+	 
 	pulloutWaypointView.add(ui.distanceLabel);
-	// pulloutWaypointView.add(distvalueLabel);
-	// pulloutWaypointView.add(bearingLabel);
 	pulloutWaypointView.add(ui.distvalueLabel);
 	pulloutWaypointView.add(ui.bearingLabel);
 	pulloutWaypointView.add(ui.bearvalueLabel);
+	
+	*/
 
 	//add the info views
 	win.add(currentLocationView);
