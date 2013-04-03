@@ -1,4 +1,5 @@
-// Require external files first; similar practice to Java's import or C++ include
+
+var geo = require('geo');
 var ui = require('ui');
 var pd = require('PositionData');
 
@@ -7,8 +8,6 @@ ui.defaultWaypoints = pd.defaultWaypoints();
 var mainTabGroup = ui.makeApplicationTabgroup();
 mainTabGroup.open();
 
-// this is almost ready to go:
-var geo = require('geo');
 
 if(geo.isEnabled()) {
 	geo.checkCompass();
