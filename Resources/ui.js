@@ -216,6 +216,7 @@ var makeWaypointsWindow = function() {
 	var tableview = Titanium.UI.createTableView(tableViewOptions);
 
 	// Add the event Listener to set the active waypoint
+	// I should make this into a function, but where to put it? UI or GEO? basically call set active waypoint and combine the other functions.
 	tableview.addEventListener('click', function(e) {
 		geo.activeWaypoint = true;
 		geo.activeName = e.rowData.title;
@@ -229,7 +230,8 @@ var makeWaypointsWindow = function() {
 		ui.waypointLabel.text = geo.activeName + "  Latitude: " + geo.activeLat + "  Longitude: " + geo.activeLon + " Bearing: " + geo.activeBearing + " Distance: " + geo.activeDist;
 		
 		// Run function to turn on the label and set the color white, also turn on the waypoint needle
-		ui.activeWaypoint(true);	
+		ui.activeWaypoint(true);
+		mainTabGroup.setActiveTab(0);
 	});
 
 	win.add(tableview);
