@@ -2,20 +2,21 @@ var geo = {};
 module.exports = geo;
 
 // declare variables for position
-var longitude = 0;
-var latitude = 0;
-var altitude = 0;
-var gpsHeading = 0;  // this is the direction the device is actually moving
-var accuracy = 0;
-var speed = 0;
-var timestamp = 0;
-var altitudeAccuracy = 0;
-var magneticHeading = 0;
-var trueHeading = 0;
+geo.longitude = 0;
+geo.latitude = 0;
+geo.altitude = 0;
+geo.gpsHeading = 0;  // this is the direction the device is actually moving
+geo.accuracy = 0;
+geo.compAccuracy = 0;
+geo.speed = 0;
+geo.timestamp = 0;
+geo.altitudeAccuracy = 0;
+geo.magneticHeading = 0;
+geo.trueHeading = 0;
 
 // adding this one to contain the state of the user's chosen info, "mag" for magnetic or "true" for true heading. I think all the math done for calculating distance is true'
 geo.headingPref = 'true';
-var compHeading = 0;
+geo.compHeading = 0;
 // this will store the heading to use for the user to see, either the magnetic or true heading based on their choice
 
 // Now we make the active waypoint. Cooler to make this an object, but I do not know how. :)
@@ -30,8 +31,16 @@ geo.activeBearing = 0;
 var headingAdded = false;
 var locationAdded = false;
 
-Ti.Geolocation.purpose = "Teppy TrekTracker";
 
+// set a bunch of stuff related to GPS and compass
+Ti.Geolocation.purpose = "Teppy TrekTracker"; // set for iOS 3 something and higher
+Ti.Geolocation.showCalibration = false; //  TURN OFF ANNOYING COMPASS INTERFERENCE MESSAGE
+Titanium.Geolocation.headingFilter = 1; // SET THE HEADING FILTER (THIS IS IN DEGREES OF ANGLE CHANGE) EVENT WON'T FIRE UNLESS ANGLE CHANGE EXCEEDS THIS VALUE
+Titanium.Geolocation.accuracy = Titanium.Geolocation.ACCURACY_BEST; // Set the GPS accuracy I want
+Titanium.Geolocation.distanceFilter = 3; //SET DISTANCE FILTER.  THIS DICTATES HOW OFTEN AN EVENT FIRES BASED ON THE DISTANCE THE DEVICE MOVes IN METERS
+
+
+// Error code function when stuff breaks
 geo.translateErrorCode = function(code) {
 	if (code == null) {
 		return null;
@@ -54,9 +63,8 @@ geo.translateErrorCode = function(code) {
 	}
 };
 
-//
+
 //  SHOW CUSTOM ALERT IF DEVICE HAS GEO TURNED OFF
-//
 geo.isEnabled = function() {
 	var message = '';
 	var locationEnabled = true;
@@ -95,16 +103,6 @@ geo.isEnabled = function() {
 //
 geo.checkCompass = function() {
 	if (Titanium.Geolocation.hasCompass) {
-		
-		//
-		//  TURN OFF ANNOYING COMPASS INTERFERENCE MESSAGE
-		//
-		Titanium.Geolocation.showCalibration = false;
-
-		//
-		// SET THE HEADING FILTER (THIS IS IN DEGREES OF ANGLE CHANGE)
-		// EVENT WON'T FIRE UNLESS ANGLE CHANGE EXCEEDS THIS VALUE
-		Titanium.Geolocation.headingFilter = 1;
 
 		var headingCallback = function(e) {
 			if (e.error) {
@@ -113,22 +111,29 @@ geo.checkCompass = function() {
 				return;
 			}
 
-			magneticHeading = e.heading.magneticHeading;
-			accuracy = e.heading.accuracy;
-			trueHeading = e.heading.trueHeading;
-			timestamp = e.heading.timestamp;
+			geo.magneticHeading = e.heading.magneticHeading;
+			geo.compAccuracy = e.heading.accuracy;
+			geo.trueHeading = e.heading.trueHeading;
+			geo.timestamp = e.heading.timestamp;
 
-			// Eric's addition is here: maybe combine this and the one-shot function above to be one label-update mechanism
-			// set the labels - if the user wants magnetic, use magnetic
+			
 			// wluu: might want to use this logic only with getCurrentHeading
+			// Eric: what? You smoking something over there?
+			
+			// set the labels - if the user wants magnetic, use magnetic
 			if (geo.headingPref === 'mag') {
-				compHeading = Math.round(magneticHeading);
+				geo.compHeading = Math.round(geo.magneticHeading);
 			} else {
 				// or they want true
-				compHeading = Math.round(trueHeading);
+				geo.compHeading = Math.round(geo.trueHeading);
 			}
-
-			ui.headLabel.text = " " + compHeading + "°";
+			
+			// run the function to animate and update the heading label
+			anim.mainNeedleAnimate();
+			anim.wayNeedleAnimate();
+			
+			// Shouldn't need this
+			// ui.headLabel.text = " " + geo.compHeading + "°";
 
 			//Titanium.API.info('geo - heading updated: ' + new Date(timestamp));
 		};
@@ -146,6 +151,81 @@ geo.checkCompass = function() {
 
 	} 
 };
+
+// check the GPS
+geo.checkGPS = function() {
+
+	ui.compassWindow.addEventListener('open', function() {
+		ui.compassWindow.openedflag = 1;
+		Titanium.Geolocation.getCurrentPosition(function(e) {
+			if (!e.success || e.error) {
+				currentLocation.text = 'error: ' + JSON.stringify(e.error);
+				Ti.API.info("Code translation: " + geo.translateErrorCode(e.code));
+				alert('error ' + JSON.stringify(e.error));
+				return;
+			}
+
+			geo.longitude = e.coords.longitude;
+			geo.latitude = e.coords.latitude;
+			geo.altitude = Math.round(e.coords.altitude);
+			geo.gpsHeading = Math.round(((e.coords.heading + 360) % 360));
+			geo.accuracy = e.coords.accuracy;
+			geo.speed = Math.round((e.coords.speed) * 10) / 10;
+			geo.timestamp = e.coords.timestamp;
+			geo.altitudeAccuracy = e.coords.altitudeAccuracy;	
+			//Ti.API.info('speed ' + speed);
+
+			// set the info in the location screen
+			ui.currentLatLabel.text = ("Latitude: " + geo.latitude);
+			ui.currentLonLabel.text = ("Longitude: " + geo.longitude);
+			ui.currentAltLabel.text = ("Altitude: " + geo.altitude);
+			ui.currentSpeedLabel.text = ("Speed: " + geo.speed);
+			ui.currentGPSHeadLabel.text = ("Moving: " + geo.gpsHeading);
+
+			//Titanium.API.info('geo - current location: ' + new Date(geo.timestamp) + ' long ' + longitude + ' lat ' + latitude + ' accuracy ' + accuracy);
+		});
+	});
+
+	//
+	// EVENT LISTENER FOR GEO EVENTS - THIS WILL FIRE REPEATEDLY (BASED ON DISTANCE FILTER)
+	//
+	var locationCallback = function(e) {
+
+		// a temporary fix to the runtime exception
+		if (e.success) {
+			geo.longitude = e.coords.longitude;
+			geo.latitude = e.coords.latitude;
+			geo.altitude = Math.round(e.coords.altitude);
+			geo.gpsHeading = Math.round(((e.coords.heading + 360) % 360));
+			geo.accuracy = e.coords.accuracy;
+			geo.speed = Math.round((e.coords.speed) * 10) / 10;
+			geo.timestamp = e.coords.timestamp;
+			geo.altitudeAccuracy = e.coords.altitudeAccuracy;
+		}
+
+		// set the info in the location screen
+		ui.currentLatLabel.text = ("Latitude: " + geo.latitude);
+		ui.currentLonLabel.text = ("Longitude: " + geo.longitude);
+		ui.currentAltLabel.text = ("Altitude: " + geo.altitude);
+		ui.currentSpeedLabel.text = ("Speed: " + geo.speed);
+		ui.currentGPSHeadLabel.text = ("Moving: " + geo.gpsHeading);
+		
+		// check the distance to the selected waypoint
+		
+
+		//Titanium.API.info('geo - location updated: ' + new Date(timestamp) + ' long ' + longitude + ' lat ' + latitude + ' accuracy ' + accuracy);
+	};
+	Titanium.Geolocation.addEventListener('location', locationCallback);
+	locationAdded = true;
+
+	// }
+
+};
+
+
+
+
+
 
 // if (Titanium.Geolocation.locationServicesEnabled === false) {
 	// Titanium.UI.createAlertDialog({
@@ -213,13 +293,13 @@ geo.checkCompass = function() {
 			// // set the labels - if the user wants magnetic, use magnetic
 			// // wluu: might want to use this logic only with getCurrentHeading
 			// if (geo.headingPref === 'mag') {
-				// compHeading = Math.round(magneticHeading);
+				// geo.compHeading = Math.round(magneticHeading);
 			// } else {
 				// // or they want true
-				// compHeading = Math.round(trueHeading);
+				// geo.compHeading = Math.round(trueHeading);
 			// }
 // 
-			// ui.headLabel.text = " " + compHeading + "°";
+			// ui.headLabel.text = " " + geo.compHeading + "°";
 // 
 			// //Titanium.API.info('geo - heading updated: ' + new Date(timestamp));
 		// };
@@ -251,13 +331,13 @@ function temp () {
 	// Titanium.Geolocation.ACCURACY_KILOMETER
 	// Titanium.Geolocation.ACCURACY_THREE_KILOMETERS
 	//
-	Titanium.Geolocation.accuracy = Titanium.Geolocation.ACCURACY_BEST;
+	// Titanium.Geolocation.accuracy = Titanium.Geolocation.ACCURACY_BEST;
 
 	//
 	//  SET DISTANCE FILTER.  THIS DICTATES HOW OFTEN AN EVENT FIRES BASED ON THE DISTANCE THE DEVICE MOVES
 	//  THIS VALUE IS IN METERS
 	//
-	Titanium.Geolocation.distanceFilter = 3;
+	// Titanium.Geolocation.distanceFilter = 3;
 
 	//
 	// GET CURRENT POSITION - THIS FIRES ONCE
@@ -273,24 +353,24 @@ function temp () {
 				return;
 			}
 
-			longitude = e.coords.longitude;
-			latitude = e.coords.latitude;
-			altitude = e.coords.altitude;
-			gpsHeading = e.coords.heading;
-			accuracy = e.coords.accuracy;
-			speed = e.coords.speed;
-			timestamp = e.coords.timestamp;
-			altitudeAccuracy = e.coords.altitudeAccuracy;
-			Ti.API.info('speed ' + speed);
+			geo.longitude = e.coords.longitude;
+			geo.latitude = e.coords.latitude;
+			geo.altitude = Math.round(e.coords.altitude);
+			geo.gpsHeading = Math.round(((e.coords.heading + 360) % 360));
+			geo.accuracy = e.coords.accuracy;
+			geo.speed = Math.round((e.coords.speed) * 10) / 10;
+			geo.timestamp = e.coords.timestamp;
+			geo.altitudeAccuracy = e.coords.altitudeAccuracy;	
+			//Ti.API.info('speed ' + speed);
 
 			// set the info in the location screen
-			ui.currentLatLabel.text = ("Latitude: " + latitude);
-			ui.currentLonLabel.text = ("Longitude: " + longitude);
-			ui.currentAltLabel.text = ("Altitude: " + altitude);
-			ui.currentSpeedLabel.text = ("Speed: " + speed);
-			ui.currentGPSHeadLabel.text = ("Moving: " + gpsHeading);
+			ui.currentLatLabel.text = ("Latitude: " + geo.latitude);
+			ui.currentLonLabel.text = ("Longitude: " + geo.longitude);
+			ui.currentAltLabel.text = ("Altitude: " + geo.altitude);
+			ui.currentSpeedLabel.text = ("Speed: " + geo.speed);
+			ui.currentGPSHeadLabel.text = ("Moving: " + geo.gpsHeading);
 
-			Titanium.API.info('geo - current location: ' + new Date(timestamp) + ' long ' + longitude + ' lat ' + latitude + ' accuracy ' + accuracy);
+			//Titanium.API.info('geo - current location: ' + new Date(geo.timestamp) + ' long ' + geo.longitude + ' lat ' + geo.latitude + ' accuracy ' + geo.accuracy);
 		});
 	});
 
@@ -320,25 +400,25 @@ function temp () {
 		
 		// a temporary fix to the runtime exception
 		if(e.success) {
-			longitude = e.coords.longitude;
-			latitude = e.coords.latitude;
-			altitude = e.coords.altitude;
-			gpsHeading = e.coords.heading;
-			accuracy = e.coords.accuracy;
-			speed = e.coords.speed;
-			timestamp = e.coords.timestamp;
-			altitudeAccuracy = e.coords.altitudeAccuracy;	
+			geo.longitude = e.coords.longitude;
+			geo.latitude = e.coords.latitude;
+			geo.altitude = Math.round(e.coords.altitude);
+			geo.gpsHeading = Math.round(((e.coords.heading + 360) % 360));
+			geo.accuracy = e.coords.accuracy;
+			geo.speed = Math.round((e.coords.speed) * 10) / 10;
+			geo.timestamp = e.coords.timestamp;
+			geo.altitudeAccuracy = e.coords.altitudeAccuracy;	
 		}
 		
 
 		// set the info in the location screen
-		ui.currentLatLabel.text = ("Latitude: " + latitude);
-		ui.currentLonLabel.text = ("Longitude: " + longitude);
-		ui.currentAltLabel.text = ("Altitude: " + altitude);
-		ui.currentSpeedLabel.text = ("Speed: " + speed);
-		ui.currentGPSHeadLabel.text = ("Moving: " + gpsHeading);
+		ui.currentLatLabel.text = ("Latitude: " + geo.latitude);
+		ui.currentLonLabel.text = ("Longitude: " + geo.longitude);
+		ui.currentAltLabel.text = ("Altitude: " + geo.altitude);
+		ui.currentSpeedLabel.text = ("Speed: " + geo.speed);
+		ui.currentGPSHeadLabel.text = ("Moving: " + geo.gpsHeading);
 
-		Titanium.API.info('geo - location updated: ' + new Date(timestamp) + ' long ' + longitude + ' lat ' + latitude + ' accuracy ' + accuracy);
+		//Titanium.API.info('geo - location updated: ' + new Date(geo.timestamp) + ' long ' + geo.longitude + ' lat ' + geo.latitude + ' accuracy ' + geo.accuracy);
 	};
 	Titanium.Geolocation.addEventListener('location', locationCallback);
 	locationAdded = true;
@@ -359,8 +439,9 @@ Number.prototype.toDeg = function() {
 }
 ///   now the distance formula
 geo.distanceCheck = function(lat1, lon1, lat2, lon2) {
-	var R = 6371;
-	// km
+	var R = 6371; // km
+	
+	// TODO I will always be looking for distance from where you are, I should remove the additional args being passed in
 	var dLat = (lat2 - lat1).toRad();
 	Ti.API.info
 	var dLon = (lon2 - lon1).toRad();
