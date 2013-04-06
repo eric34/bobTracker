@@ -122,8 +122,8 @@ exports.waypoints = [
 	
 	{ 
 		title : 'On the corner',
-		wayLatitude : 37.337681,
-		wayLongitude : -122.038193,
+		wayLatitude : 37.288222,
+		wayLongitude : -122.891943,
 		hasChild : true,
 		color : '#000',
 		font : { fontWeight :'bold' }
