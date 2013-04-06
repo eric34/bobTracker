@@ -222,6 +222,8 @@ var makeWaypointsWindow = function() {
 		geo.activeName = e.rowData.title;
 		geo.activeLat = e.rowData.wayLatitude;
 		geo.activeLon = e.rowData.wayLongitude;
+		geo.activeDist = geo.distanceCheck(geo.latitude, geo.longitude, geo.activeLat, geo.activeLon);
+		geo.activeBearing = geo.bearingCheck(geo.latitude, geo.longitude, geo.activeLat, geo.activeLon);
 
 		// Need to set these once the math part can be called as function
 		//activeDist = 0;
