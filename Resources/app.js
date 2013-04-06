@@ -2,6 +2,7 @@
 var geo = require('geo');
 var ui = require('ui');
 var pd = require('PositionData');
+var anim = require('anim');
 
 ui.defaultWaypoints = pd.defaultWaypoints();
 
@@ -11,6 +12,7 @@ mainTabGroup.open();
 
 if(geo.isEnabled()) {
 	geo.checkCompass();
+	geo.checkGPS();
 }
 
 // This sets the compass update to happen every 1 degree of rotation
