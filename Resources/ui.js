@@ -205,9 +205,6 @@ var makeWaypointsWindow = function() {
 	var tableViewOptions = {
 		data : ui.defaultWaypoints,
 		headerView : headerView,
-		//headerTitle:'Default waypoints',
-		//headerColor:'white',
-		//backgroundImage:backgroundImage,
 		backgroundColor : '#262e2f',
 		rowBackgroundColor : 'white',
 		style : Titanium.UI.iPhone.TableViewStyle.GROUPED
@@ -223,12 +220,11 @@ var makeWaypointsWindow = function() {
 		geo.activeLat = e.rowData.wayLatitude;
 		geo.activeLon = e.rowData.wayLongitude;
 		geo.activeDist = geo.distanceCheck(geo.latitude, geo.longitude, geo.activeLat, geo.activeLon);
+		ui.currentWaypointDist.text = geo.activeDist+" Miles"; // set the location label for distance
 		geo.activeBearing = geo.bearingCheck(geo.latitude, geo.longitude, geo.activeLat, geo.activeLon);
+		ui.currentWaypointBear.text = geo.activeBearing+"°"; // set the location label for bearing
+		ui.currentWaypointName.text = geo.activeName;
 
-		// Need to set these once the math part can be called as function
-		//activeDist = 0;
-		//activeBearing = 0;
-		// ui.waypointLabel.color = 'white';  // i moved this
 		ui.waypointLabel.text = geo.activeName + "  Latitude: " + geo.activeLat + "  Longitude: " + geo.activeLon + " Bearing: " + geo.activeBearing + " Distance: " + geo.activeDist;
 		
 		// Run function to turn on the label and set the color white, also turn on the waypoint needle
@@ -240,28 +236,6 @@ var makeWaypointsWindow = function() {
 
 	return win;
 }
-
-/*  Remove this later
-// make some labels for Mountain View TESTING
-ui.distanceLabel = Ti.UI.createLabel({
-	text : "You are this many miles from MV:",
-	color : 'white',
-	top : 5
-});
-ui.bearvalueLabel = Ti.UI.createLabel({
-	color : 'white',
-	top : 5
-});
-ui.distvalueLabel = Ti.UI.createLabel({
-	color : 'white',
-	top : 5
-});
-ui.bearingLabel = Ti.UI.createLabel({
-	text : "Waypoint bearing is degrees",
-	color : 'white',
-	top : 5
-});
-*/
 
 // make some labels for the various data points for current location
 ui.currentLocationLabel = Ti.UI.createLabel({
@@ -284,31 +258,69 @@ ui.currentLonLabel = Ti.UI.createLabel({
 });
 ui.currentAltLabel = Ti.UI.createLabel({
 	text : "Altitude:",
-	color : 'white'
+	color : 'white',
+	left: 5
 });
 ui.currentSpeedLabel = Ti.UI.createLabel({
 	text : "Speed:",
-	left : 50,
-	color : 'white'
+	color : 'white',
+	left : 10
 });
 ui.currentGPSHeadLabel = Ti.UI.createLabel({
 	text : "Moving:",
-	left : 50,
-	color : 'white'
+	color : 'white',
+	left : 10
+	
 });
+
+// Current selected waypoint labels
 ui.currentWaypointLabel = Ti.UI.createLabel({
 	text : "Active Waypoint:",
 	left : 5,
 	color : 'white',
 	top : 5
 });
+ui.currentWaypointName = Ti.UI.createLabel({
+	text : "WP Name",
+	left : 5,
+	color : 'white',
+	top : 5
+});
+ui.currentWaypointDist = Ti.UI.createLabel({
+	text : "WP Dist",
+	left : 5,
+	color : 'white',
+	top : 5
+});
+ui.currentWaypointBear = Ti.UI.createLabel({
+	text : "WP Bearing",
+	left : 5,
+	color : 'white',
+	top : 5
+});
+
+// And pullout Waypoint labels
 ui.pulloutWaypointLabel = Ti.UI.createLabel({
 	text : "Pullout Waypoint:",
 	left : 5,
 	color : 'white',
 	top : 5
 });
+ui.pulloutWaypointDist = Ti.UI.createLabel({
+	text : "PO dist",
+	left : 5,
+	color : 'white',
+	top : 5
+});
+ui.pulloutWaypointBear = Ti.UI.createLabel({
+	text : "PO Bear",
+	left : 5,
+	color : 'white',
+	top : 5
+});
 
+
+// and make the location window
 var makeLocationWindow = function() {
 
 	var win = Titanium.UI.createWindow({
@@ -318,19 +330,6 @@ var makeLocationWindow = function() {
 		barColor : '#18223c'
 	});
 
-	// make some labels for Mountain View TESTING
-	var distanceLabel = Ti.UI.createLabel({
-		text : "You are this many miles from MV:",
-		color : 'white',
-		top : 5
-	});
-	// var distvalueLabel=Ti.UI.createLabel({color:'white', top:5});
-	// var bearingLabel=Ti.UI.createLabel({text:"Waypoint bearing is degrees", color:'white', top:5});
-	var bearvalueLabel = Ti.UI.createLabel({
-		color : 'white',
-		top : 5
-	});
-
 	// make the current location view
 	var currentLocationView = Ti.UI.createView({
 		borderRadius : 10,
@@ -338,7 +337,7 @@ var makeLocationWindow = function() {
 		layout : 'vertical',
 		borderWidth : 3,
 		top : 3,
-		height : '33%'
+		height : '50%'
 
 	});
 
@@ -356,7 +355,7 @@ var makeLocationWindow = function() {
 		borderColor : 'black',
 		layout : 'vertical',
 		borderWidth : 3,
-		height : '33%'
+		height : '25%'
 
 	});
 
@@ -367,7 +366,7 @@ var makeLocationWindow = function() {
 		borderColor : 'black',
 		layout : 'vertical',
 		borderWidth : 3,
-		height : '33%'
+		height : '25%'
 
 	});
 
@@ -376,7 +375,7 @@ var makeLocationWindow = function() {
 	currentLocationView.add(ui.currentLatLabel);
 	currentLocationView.add(ui.currentLonLabel);
 
-	// bottom row
+	// bottom row of current location
 	currentLocationOtherView.add(ui.currentAltLabel);
 	currentLocationOtherView.add(ui.currentSpeedLabel);
 	currentLocationOtherView.add(ui.currentGPSHeadLabel);
@@ -384,19 +383,14 @@ var makeLocationWindow = function() {
 	
 	// add the active waypoint view
 	activeWaypointView.add(ui.currentWaypointLabel);
-	// activeWaypointView.add(ui.waypointLabel); // strange, adding this label from the compass page removed it from the compass page
+	activeWaypointView.add(ui.currentWaypointName);
+	activeWaypointView.add(ui.currentWaypointDist);
+	activeWaypointView.add(ui.currentWaypointBear);
 
 	// add some labels for the pull out section
 	pulloutWaypointView.add(ui.pulloutWaypointLabel);
-	
-	/* remove this later
-	 
-	pulloutWaypointView.add(ui.distanceLabel);
-	pulloutWaypointView.add(ui.distvalueLabel);
-	pulloutWaypointView.add(ui.bearingLabel);
-	pulloutWaypointView.add(ui.bearvalueLabel);
-	
-	*/
+	pulloutWaypointView.add(ui.pulloutWaypointDist);
+	pulloutWaypointView.add(ui.pulloutWaypointBear);
 
 	//add the info views
 	win.add(currentLocationView);
