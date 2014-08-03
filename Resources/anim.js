@@ -55,7 +55,7 @@ anim.mainNeedleAnimate = function() {
 	ui.needleImage.animate(a);
 
 	ui.headLabel.text = " " + geo.compHeading + "°";
-}
+};
 
 
 anim.wayNeedleAnimate = function() {
@@ -105,4 +105,4 @@ anim.wayNeedleAnimate = function() {
 		ui.wayneedleImage.animate(a2);
 	}
 
-}
+};

@@ -1,6 +1,6 @@
 var ui = {};
 module.exports = ui;
-
+// Dude
 // making compassWindow, waypointsWindow, and locationWindow available to other files
 // these windows object can be used with geo.js
 // these windows won't be created until you makeApplicationTabgroup
@@ -9,6 +9,7 @@ ui.waypointsWindow = undefined;
 ui.locationWindow = undefined;
 ui.makeApplicationTabgroup = function() {
 	var self = Ti.UI.createTabGroup();
+
 
 	ui.compassWindow = makeCompassWindow();
 	ui.waypointsWindow = makeWaypointsWindow();
@@ -37,7 +38,7 @@ ui.makeApplicationTabgroup = function() {
 	self.addTab(locationTab);
 
 	return self;
-}
+};
 // Some of the object functions below (e.g. var makeCompassWindow) don't need be in the ui namespace
 // They'll only be used by makeApplicationTabgroup
 
@@ -54,7 +55,9 @@ var waypointboxmargin = 5;
 // check for iPhone 5, and set stuff if so
 if (Titanium.Platform.displayCaps.platformHeight === 568) {
 	isIphone5 = true;
-	backgroundImage = '/images/newCompass-568h@2x.png';
+	Ti.API.info("On iPhone 5");
+	//backgroundImage = '/images/newCompass-568h@2x.png';
+	backgroundImage = '/images/test.png';
 	degreeLabelTop = 40;
 	prefLabelTop = 100;
 	waypointBox = 120;
@@ -107,10 +110,10 @@ ui.activeWaypoint = function(e) {
 	} else {
 		ui.wayneedleImage.hide();
 		ui.waypointLabel.color = 'black';
-		ui.waypointLabel.text = "No active waypoint"
+		ui.waypointLabel.text = "No active waypoint";
 		geo.activeWaypoint = false;
 	}
-}
+};
 
 
 var makeCompassWindow = function() {
@@ -146,6 +149,8 @@ var makeCompassWindow = function() {
 	ui.wayneedleImage.hide(); // should need to remove later when I can load an active waypoint from a property
 	
 	win.add(waypointInfo);
+
+	
 	win.add(ui.needleImage);
 	
 
@@ -163,7 +168,7 @@ var makeCompassWindow = function() {
 	// ---------------->
 
 	return win;
-}
+};
 
 
 
@@ -175,6 +180,15 @@ var makeWaypointsWindow = function() {
 	var addButton = Ti.UI.createButton({
 		title : "Add"
 	});
+	
+	// add entry fields and open this to add a new waypoint
+	//var inputView = 
+	
+	// add to do list here
+	//addButton.addEventListener();
+	
+	
+	
 	var win = Titanium.UI.createWindow({
 		title : 'Waypoints',
 		backgroundColor : '#fff',
@@ -235,7 +249,7 @@ var makeWaypointsWindow = function() {
 	win.add(tableview);
 
 	return win;
-}
+};
 
 // make some labels for the various data points for current location
 ui.currentLocationLabel = Ti.UI.createLabel({
@@ -398,4 +412,4 @@ var makeLocationWindow = function() {
 	win.add(pulloutWaypointView);
 
 	return win;
-}
+};
